@@ -1,12 +1,16 @@
-﻿using System;
+﻿/*
+ * This defines how the memory looks like.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace CHIP_8_dotNET
 {
-    static class Memory
+     class Memory
     {
-        public static byte[] memory = new byte[4096];
+        public  byte[] Stack = new byte[4096];
 
         const int interpreterSize                         = 0x0200;
         const int programSize                             = 0x0CFF;
@@ -14,14 +18,14 @@ namespace CHIP_8_dotNET
         const int videoMemorySize                         = 0x00FF;
         //const int fontSetSize                           = 80;
 
-        public static byte[] interpreterMemory            = new byte[interpreterSize];
-        public static byte[] programMemory                = new byte[programSize];
-        public static byte[] ETI660ProgramMemory          = new byte[ETI660ProgramSize];
-        public static byte[] videoMemory                  = new byte[videoMemorySize];
+        public  byte[] interpreterMemory            = new byte[interpreterSize];
+        public  byte[] programMemory                = new byte[programSize];
+        public  byte[] ETI660ProgramMemory          = new byte[ETI660ProgramSize];
+        public  byte[] videoMemory                  = new byte[videoMemorySize];
         //byte[] fontSet                                  = new byte[fontSetSize];
 
         // Fonts are part of interpreter memory
-        public static byte[] fontSet =
+        public byte[] fontSet =
         {
                 0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 	            0x20, 0x60, 0x20, 0x20, 0x70, // 1

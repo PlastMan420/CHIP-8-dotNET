@@ -6,6 +6,13 @@ namespace CHIP_8_dotNET
 {
     class InstructionSet : IInstructionSet
     {
+        private readonly ICPU        cpu        = new ICPU();
+        private readonly IMemory     memory     = new IMemory();
+        InstructionSet(IMemory _memory, ICPU _cpu)
+        {
+            memory = _memory;
+            cpu = _cpu;
+        }
         public void Call_addr()
         {
             throw new NotImplementedException();
@@ -13,12 +20,13 @@ namespace CHIP_8_dotNET
 
         public void CLS()
         {   // Clear video buffer (clears display)
-            Memory.videoMemory = null;
+            memory.videoMemory = null;
         }
 
         public void JP_addr()
         {
-            --CHIP8.SP;
+            --cpu.SP;
+            cpu.PC = memory.Stack[cpu.SP];
         }
 
         public void RET()
