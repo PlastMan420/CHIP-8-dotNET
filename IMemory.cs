@@ -6,6 +6,8 @@ namespace CHIP_8_dotNET
 {
     interface IMemory
     {
-        public void InitFont();
+        public void InitProgram();
+        public void InitMemory();
+
     }
 }
