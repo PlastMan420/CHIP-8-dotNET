@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using System.Text;
 
-namespace CHIP_8_dotNET
+namespace CHIP_8_dotNET.Chip8
 {
      class CPU
     {
@@ -22,5 +22,6 @@ namespace CHIP_8_dotNET
         // Instruction set
         // either do a big dictionary or a class + reflection
          Dictionary<UInt16, Delegate> opCode = new Dictionary<UInt16, Delegate>();
+        public CPU() { }
     }
 }

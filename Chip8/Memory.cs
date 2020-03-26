@@ -12,9 +12,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace CHIP_8_dotNET
+namespace CHIP_8_dotNET.Chip8
 {
-     class Memory : IMemory
+     class Memory
     {
         const int systemSize                        = 0x4096;
         const int fontSetSize                       = 80;
@@ -50,14 +50,15 @@ namespace CHIP_8_dotNET
 	            0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
 	            0xF0, 0x80, 0xF0, 0x80, 0x80  // F
         };
+        public Memory() { }
         public void InitProgram( )
         {
             throw new NotImplementedException();
         }
         public void InitMemory()
         {
-            liveMem = fontSet.Concat(interpreterMemory).Concat(programMemory)
-                .Concat(stack).Concat(videoMemory).ToArray();
+            //liveMem = fontSet.Concat(interpreterMemory).Concat(programMemory)
+            //    .Concat(stack).Concat(videoMemory).ToArray();
         }
 
 
