@@ -1,7 +1,6 @@
 ﻿/*
- * This is the CPU
- * -It defines the data structure of the CPU
- * -It looks up for methods inside 'InstructionSet' using the equivalent passed in opcode
+ * This defines the CPU as a structure.
+ * Execusion.cs and InstructionSet.cs define the CPU's execusion.
  */
 
 using System;
@@ -14,14 +13,12 @@ namespace CHIP_8_dotNET.Chip8
      class CPU
     {
         // Registers
-        public  byte[] registers = new byte[16];
-        public  UInt16 IReg;
-        public  UInt16 PC;
-        public  byte SP;
+        public  byte[] registers = new byte[16];    // x16 8-bit general purpose registers
+        public  UInt16 IReg;                        // index register
+        public  UInt16 PC;                          // program counter
+        public  byte SP;                            // stack pointer
 
-        // Instruction set
-        // either do a big dictionary or a class + reflection
-         Dictionary<UInt16, Delegate> opCode = new Dictionary<UInt16, Delegate>();
+        //Dictionary<UInt16, Delegate> opCode = new Dictionary<UInt16, Delegate>();
         public CPU() { }
     }
 }

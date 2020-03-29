@@ -12,12 +12,26 @@ namespace CHIP_8_dotNET.Chip8
     {
         private readonly CPU cpu = new CPU();
         private readonly Memory memory = new Memory();
-        public InstructionSet(Memory _memory, CPU _cpu)
+        //public byte Vx, Vy, data;
+        public InstructionSet(ref Memory _memory, ref CPU _cpu)
         {
             memory = _memory;
             cpu = _cpu;
         }
-
+        /// <summary>
+        /// Helper methods
+        /// </summary>
+        public void FetchData(ref byte Vx, ref byte data, ref ushort opcode)
+        {
+            Vx = (byte)((opcode & 0x0F00u) >> 8);
+            data = (byte)(opcode & 0x00FFu);
+        }
+        public void FetchXY(ref byte Vx, ref byte Vy, ref ushort opcode) // Helper method
+        {
+            Vx = (byte)((opcode & 0x0F00u) >> 8);
+            Vy = (byte)((opcode & 0x00F0u) >> 4);
+        }
+        /////////////////////////////////////////////////////////////////////////////////
         public void CLS() // 0x00E0
         {   // Clear video buffer (clears display)
             memory.videoMemory = null;
@@ -62,6 +76,7 @@ namespace CHIP_8_dotNET.Chip8
             if (cpu.registers[Vx] == cpu.registers[Vy])
                 cpu.PC += 2;
         }
+
         public void LD_6xkk(ushort opcode)  // Set Vx = kk.
         {
             byte Vx     = (byte)((opcode & 0x0F00u) >> 8);
@@ -71,44 +86,75 @@ namespace CHIP_8_dotNET.Chip8
         }
         public void ADD_7xkk(ushort opcode) // Set Vx = Vx + kk.
         {
-            byte Vx     = (byte)((opcode & 0x0F00u) >> 8);
-            byte data   = (byte)(opcode & 0x00FFu);
-
+            byte Vx     = 0,
+                 data   = 0;
+            FetchData(ref Vx, ref data, ref opcode);
             cpu.registers[Vx] += data;
         }
 
-        public void FetchXY(ref byte Vx, ref byte Vy, ref ushort opcode) // Helper method
-        {
-            Vx = (byte)((opcode & 0x0F00u) >> 8);
-            Vy = (byte)((opcode & 0x00F0u) >> 4);
-        }
-        public void LD_8xy0(ushort opcode)  // Set Vx = Vy.
-        {
-            byte Vx = 0,
-                 Vy = 0;
-            FetchXY(ref Vx, ref Vy, ref opcode);
-            cpu.registers[Vx] = cpu.registers[Vy];
-        }
-        public void OR_8xy1(ushort opcode)  // Set Vx = Vx OR Vy.
+
+
+        /// <summary>
+        /// Opcode set 8xxx. they include logical and arithmetic operations
+        /// </summary>
+        /// <param name="opcode"></param>
+        public void Logic_8000(ushort opcode)
         {
             byte Vx = 0,
                  Vy = 0;
             FetchXY(ref Vx, ref Vy, ref opcode);
-            cpu.registers[Vx] |= cpu.registers[Vy];
+            int op = opcode & 0x000F;
+            switch (op)
+            {
+                case 0: // Load Vy into Vx
+                    cpu.registers[Vx] = cpu.registers[Vy];
+                    break;
+
+                case 1: // AND
+                    cpu.registers[Vx] &= cpu.registers[Vy];
+                    break;
+
+                case 2: // OR
+                    cpu.registers[Vx] |= cpu.registers[Vy];
+                    break;
+
+                case 3: // XOR
+                    cpu.registers[Vx] ^= cpu.registers[Vy];
+                    break;
+
+                case 4: // summing 2 registers.
+                    int sum = (cpu.registers[Vx] + cpu.registers[Vy]);
+                    if (sum > 255u) cpu.registers[15] = 1; else cpu.registers[15] = 0;
+                    cpu.registers[Vx] = (byte)(sum & 0xFFu);
+                    break;
+
+                case 5: // subtracting Vy from Vx.
+                    if (cpu.registers[Vx] > cpu.registers[Vy]) cpu.registers[15] = 1; else cpu.registers[15] = 0;
+                    cpu.registers[Vx] -= cpu.registers[Vy];
+                    break;
+
+                case 6:
+                    cpu.registers[15] = (byte)(cpu.registers[15] & 0x1u);
+                    cpu.registers[Vx] >>= 1;
+                    break;
+
+                case 7:
+                    if (cpu.registers[Vy] > cpu.registers[Vx]) cpu.registers[15] = 1; else cpu.registers[15] = 0;
+                    cpu.registers[Vx] = (byte)(cpu.registers[Vy] - cpu.registers[Vx]);
+                    break;
+
+                case 0xE:
+                    cpu.registers[15] = (byte)((cpu.registers[Vx] & 0x80u) >> 7);
+                    cpu.registers[Vx] <<= 1;
+                    break;
+            }
+                
         }
-        public void AND_8xy2(ushort opcode) // Set Vx = Vx AND Vy.
+        public void SNE_9xy0(ushort opcode)
         {
             byte Vx = 0,
                  Vy = 0;
             FetchXY(ref Vx, ref Vy, ref opcode);
-            cpu.registers[Vx] &= cpu.registers[Vy];
-        }
-        public void XOR_8xy3(ushort opcode) // Set Vx = Vx XOR Vy.
-        {
-            byte Vx = 0,
-                 Vy = 0;
-            FetchXY(ref Vx, ref Vy, ref opcode);
-            cpu.registers[Vx] ^= cpu.registers[Vy];
         }
     }
 }
