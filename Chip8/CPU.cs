@@ -16,8 +16,9 @@ namespace CHIP_8_dotNET.Chip8
         public  byte[] registers = new byte[16];    // x16 8-bit general purpose registers
         public  UInt16 IReg;                        // index register
         public  UInt16 PC;                          // program counter
-        public  byte SP;                            // stack pointer
-
+        public  byte   SP;                          // stack pointer
+        public  byte   delayTimer;
+        public  byte   soundTimer;
         //Dictionary<UInt16, Delegate> opCode = new Dictionary<UInt16, Delegate>();
         public CPU() { }
     }

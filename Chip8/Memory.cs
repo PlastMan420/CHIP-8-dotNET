@@ -16,21 +16,19 @@ namespace CHIP_8_dotNET.Chip8
 {
      class Memory
     {
-        const int systemSize                        = 0x4096;
-        const int fontSetSize                       = 80;
-        const int interpreterSize                   = 0x0180;
-        const int programSize                       = 0x0C9D;
-        //const int ETI660ProgramSize                 = 0x09FF;
-        const int stackSize                         = 0x64;
-        const int videoMemorySize                   = 0x00FF;
+        const   int systemSize                  = 0x4096;
+        const   int fontSetSize                 = 80;
+        const   int interpreterSize             = 0x0180;
+        const   int programSize                 = 0x0C9D;
+        const   int stackSize                   = 0x64;
+        const   int videoMemorySize             = 0x00FF;
+        const   int keypadSize                  = 16;
 
-        public  byte[] liveMem                      = new byte[systemSize];
-
-        public  byte[] interpreterMemory            = new byte[interpreterSize];
-        public  byte[] programMemory                = new byte[programSize];
-        //public  byte[] ETI660ProgramMemory          = new byte[ETI660ProgramSize];
-        public  byte[] stack                        = new byte[stackSize];
-        public  byte[] videoMemory                  = new byte[videoMemorySize];
+        public  byte[] liveMem                  = new byte[systemSize];
+        public  byte[] interpreterMemory        = new byte[interpreterSize];
+        public  byte[] programMemory            = new byte[programSize];
+        public  byte[] stack                    = new byte[stackSize];
+        public  uint[,] videoMemory             = new uint[64,32]; // It's uint32 so that we can use SDL2
         public  byte[] fontSet =
         {
                 0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -49,6 +47,14 @@ namespace CHIP_8_dotNET.Chip8
 	            0xE0, 0x90, 0x90, 0x90, 0xE0, // D
 	            0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
 	            0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+        };
+        public byte[] keypad =
+        {
+            0x1, 0x2, 0x3, 
+            0x4, 0x5, 0x6, 
+            0x7, 0x8, 0x9, 
+            0xA, 0xB, 0xC, 
+            0xD, 0xE, 0xF
         };
         public Memory() { }
         public void InitProgram( )
