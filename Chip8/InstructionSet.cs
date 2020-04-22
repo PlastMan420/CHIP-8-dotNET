@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace CHIP_8_dotNET.Chip8
 {
@@ -56,6 +57,14 @@ namespace CHIP_8_dotNET.Chip8
 			byte	randomByte = (byte)randGen.Next(0, 255);
 			return	randomByte;
 		} 
+		public byte ReadInput()
+		{
+			int	input	=	Convert.ToInt32(Console.ReadKey());
+			if(memory.keypad.Contains(input))	
+				return	Convert.ToByte(input);
+			
+			return	ReadInput();
+		}
 		/////////////////////////////////////////////////////////////////////////////////
 
 		public void CLS() // 0x00E0
@@ -65,59 +74,59 @@ namespace CHIP_8_dotNET.Chip8
 		public void RET() // 0x00EE
 		{
 			--cpu.SP;
-			cpu.PC	= memory.stack[cpu.SP];
+			cpu.PC								=	memory.stack[cpu.SP];
 		}
 
 		public void JMP(ushort opcode) //op: 0x1nnn --> 1000 + a 12 bit address
 		{
-			ushort address	=	ParseAddress(ref opcode); // Casting to prevent Int promotions
-			cpu.PC			=	address;
+			ushort address						=	ParseAddress(ref opcode); // Casting to prevent Int promotions
+			cpu.PC								=	address;
 		}
 		public void CALL(ushort opcode) // 0x2nnn --> 2000 + a 12 bit address
 		{
-			ushort address			=	ParseAddress(ref opcode);
+			ushort address						=	ParseAddress(ref opcode);
 
-			memory.stack[cpu.SP]	=	(byte)cpu.PC;
-			++cpu.SP;
-			cpu.PC					=	address;
+			memory.stack[cpu.SP]				=	(byte)cpu.PC;
+			++cpu.SP;	
+			cpu.PC								=	address;
 		}
 		public void SEQ_3xkk(ushort opcode)   // 0x3XKK --> 0x3000 + (x = register number) + (kk = value)
 		{
-			(byte, byte) parsedData = ParseData(ref opcode);	// compute once and store  in a (byte, byte)
-			byte Vx					= parsedData.Item1;			// Get register number
-			byte data				= parsedData.Item2;			// fetch data
+			(byte, byte) parsedData				=	ParseData(ref opcode);	// compute once and store  in a (byte, byte)
+			byte	Vx							=	parsedData.Item1;			// Get register number
+			byte	data						=	parsedData.Item2;			// fetch data
 			if (cpu.registers[Vx]	==	data)
 				cpu.PC	+=	2;
 		}
 		public void SNE_4xkk(ushort opcode) // Skip next instruction if Vx != kk.
 		{
-			(byte, byte) parsedData = ParseData(ref opcode);    // compute once and store  in a (byte, byte)
-			byte Vx					= parsedData.Item1;			// Get register number
-			byte data				= parsedData.Item2;			// fetch data
+			(byte, byte)	parsedData			=	ParseData(ref opcode);    // compute once and store  in a (byte, byte)
+			byte			Vx					=	parsedData.Item1;			// Get register number
+			byte			 data				=	parsedData.Item2;			// fetch data
 			if (cpu.registers[Vx] != data)
 				cpu.PC += 2;
 		}
 		public void SE_5xy0(ushort opcode)  // Skip next instruction if Vx = Vy.
 		{
-			(byte, byte) parsedRegisters	=	ParseRegisters(ref opcode);
-			byte Vx							=	parsedRegisters.Item1;
-			byte Vy							=	parsedRegisters.Item2;
+			(byte, byte) parsedRegisters		=	ParseRegisters(ref opcode);
+			byte Vx								=	parsedRegisters.Item1;
+			byte Vy								=	parsedRegisters.Item2;
 			if (cpu.registers[Vx] == cpu.registers[Vy])
 				cpu.PC += 2;
 		}
 
 		public void LD_6xkk(ushort opcode)  // Set Vx = kk.
 		{
-			(byte, byte) parsedData = ParseData(ref opcode);    // compute once and store  in a (byte, byte)
-			byte Vx					= parsedData.Item1;         // Get register number
-			byte data				= parsedData.Item2;         // fetch data
+			(byte, byte)	parsedData			=	ParseData(ref opcode);    // compute once and store  in a (byte, byte)
+			byte			Vx					=	parsedData.Item1;         // Get register number
+			byte			data				=	parsedData.Item2;         // fetch data
 			cpu.registers[Vx] = data;
 		}
 		public void ADD_7xkk(ushort opcode) // Set Vx = Vx + kk.
 		{
-			(byte, byte) parsedData =	ParseData(ref opcode);    // compute once and store  in a (byte, byte)
-			byte Vx					=	parsedData.Item1;         // Get register number
-			byte data				=	parsedData.Item2;         // fetch data
+			(byte, byte)	parsedData			=	ParseData(ref opcode);    // compute once and store  in a (byte, byte)
+			byte			Vx					=	parsedData.Item1;         // Get register number
+			byte			data				=	parsedData.Item2;         // fetch data
 			cpu.registers[Vx] += data;
 		}
 
@@ -129,37 +138,37 @@ namespace CHIP_8_dotNET.Chip8
 		/// <param name="opcode"></param>
 		public void Set_8000(ushort opcode)
 		{
-			(byte, byte) parsedRegisters	=	ParseRegisters(ref opcode);
-			byte Vx							=	parsedRegisters.Item1;
-			byte Vy							=	parsedRegisters.Item2;
-			byte op							=	(byte)(opcode & 0x000F);
+			(byte, byte) parsedRegisters		=	ParseRegisters(ref opcode);
+			byte	Vx							=	parsedRegisters.Item1;
+			byte	Vy							=	parsedRegisters.Item2;
+			byte	op							=	(byte)(opcode & 0x000F);
 			switch (op)
 			{
-				case 0x0:         // Load Vy into Vx
+				case	0x0:         // Load Vy into Vx
 					cpu.registers[Vx] = cpu.registers[Vy];
 					break;
 
-				case 0x1:        // AND
+				case	0x1:        // AND
 					cpu.registers[Vx] &= cpu.registers[Vy];
 					break;
 
-				case 0x2:       // OR
+				case	0x2:       // OR
 					cpu.registers[Vx] |= cpu.registers[Vy];
 					break;
 
-				case 0x3:      // XOR
+				case	0x3:      // XOR
 					cpu.registers[Vx] ^= cpu.registers[Vy];
 					break;
 
-				case 0x4:      // summing 2 registers.
+				case	0x4:      // summing 2 registers.
 					int sum = (cpu.registers[Vx] + cpu.registers[Vy]);
 					if (sum > 255u) cpu.registers[15] = 1; else cpu.registers[15] = 0;
 					cpu.registers[Vx] = (byte)(sum & 0xFFu);
 					break;
 
-				case 0x5:     // subtracting Vy from Vx.
-					if (cpu.registers[Vx] > cpu.registers[Vy]) cpu.registers[15] = 1; else cpu.registers[15] = 0;
-					cpu.registers[Vx] -= cpu.registers[Vy];
+				case	0x5:     // subtracting Vy from Vx.
+					if (cpu.registers[Vx] > cpu.registers[Vy]) cpu.registers[15]	=	1; else cpu.registers[15] = 0;
+					cpu.registers[Vx]	-= cpu.registers[Vy];
 					break;
 
 				case 0x6:
@@ -211,23 +220,72 @@ namespace CHIP_8_dotNET.Chip8
 			(byte, byte) parsedData			=	ParseData(ref opcode);		//	Compute once and store in a (byte, byte)
 			byte Vx							=	parsedData.Item1;			//	Get register number
 			byte op							=	parsedData.Item2;			//	Fetch data
-			byte key						=	cpu.registers[Vx];			//	Fetch Value from selected register
-			ConsoleKeyInfo input = Console.ReadKey();
+			byte key						=	cpu.registers[Vx];          //	Fetch Value from selected register
+			byte input						=	ReadInput();
 			switch (op)
 			{
 				case 0x9E:		//Skip next instruction if key with the value of Vx is pressed.
-					if (input.KeyChar	==	key) cpu.PC	+=	2;
+					if (input	==	key) cpu.PC	+=	2;
 					break;
 				case 0xA1:		//	Skip next instruction if key with the value of Vx is not pressed.
-					if (input.KeyChar	==	key) cpu.PC	+=	2;
+					if (input	==	key) cpu.PC	+=	2;
 					break;
 			}
 		}
-		public void LD_Fxxx(ushort opcode) 
+		public void LD_Fxxx(ushort opcode)	//	0xFxDD
 		{
-			(byte, byte) parsedData			=	ParseData(ref opcode);		// compute once and store in a (byte, byte)
-			byte Vx							=	parsedData.Item1;			// Get register number
-			byte data						=	parsedData.Item2;			// fetch data
+			(byte, byte)	parsedData		=	ParseData(ref opcode);		// compute once and store in a (byte, byte)
+			byte			Vx				=	parsedData.Item1;			// Get register number
+			byte			op				=	parsedData.Item2;           // fetch data
+			switch(op)
+			{
+				case	0x07:   //	Set Vx = delay timer value.
+					cpu.registers[Vx]	=	cpu.delayTimer;
+					break;
+				case	0x0A:   //	Wait for a key press, store the value of the key in Vx.
+					byte	key			=	ReadInput();
+					break;
+				case	0x15:
+					cpu.delayTimer		=	cpu.registers[Vx];
+					break;
+				case	0x18:   //	Set sound timer = Vx.
+					cpu.soundTimer		=	cpu.registers[Vx];
+					break;
+				case	0x1E:   //	Set I = I + Vx.
+					cpu.IReg			+=	cpu.registers[Vx];
+					break;
+				case	0x29:   //	Set I = location of sprite for digit Vx.
+					byte digit = cpu.registers[Vx];
+					cpu.IReg = memory.fontSet[(byte)5 * digit];
+					break;
+
+				case	0x33:
+					byte value = cpu.registers[Vx];
+					// Ones-place
+					memory.programMemory[cpu.IReg + 2] = (byte)(value % 10);
+					value /= 10;
+
+					// Tens-place
+					memory.programMemory[cpu.IReg + 1] = (byte)(value % 10);
+					value /= 10;
+
+					// Hundreds-place
+					memory.programMemory[cpu.IReg] = (byte)(value % 10);
+					break;
+				case	0x55:   //	Store registers V0 through Vx in memory starting at location I.
+					for (byte i = 0; i <= Vx; ++i)
+					{
+						memory.programMemory[cpu.IReg + i] = cpu.registers[i];
+					}
+					break;
+				case	0x65:   //	Read registers V0 through Vx from memory starting at location I.
+					for (byte i = 0; i <= Vx; ++i)
+					{
+						cpu.registers[i] = memory.programMemory[cpu.IReg + i];
+					}
+					break;
+
+			}
 		}
 	}
 }

@@ -4,7 +4,7 @@
 
  /*     Memory Map (in bytes) -------------->
   * | fonts 0x80 | interpreter 0x180 | program 0xC9B | stack 0x64 | Display Memory 0xFF |
-  * 
+  *  0                           1FF  200
   */
 
 using System;
@@ -19,15 +19,14 @@ namespace CHIP_8_dotNET.Chip8
         const   int systemSize                  = 0x4096;
         const   int fontSetSize                 = 80;
         const   int interpreterSize             = 0x0180;
-        const   int programSize                 = 0x0C9D;
-        const   int stackSize                   = 0x64;
-        const   int videoMemorySize             = 0x00FF;
+        const   int programSize                 = 4096;
+        const   int stackSize                   = 0x16;
         const   int keypadSize                  = 16;
 
         public  byte[] liveMem                  = new byte[systemSize];
         public  byte[] interpreterMemory        = new byte[interpreterSize];
         public  byte[] programMemory            = new byte[programSize];
-        public  byte[] stack                    = new byte[stackSize];
+        public  ushort[] stack                  = new ushort[stackSize];
         public  uint[,] videoMemory             = new uint[64,32]; // It's uint32 so that we can use SDL2
         public  byte[] fontSet =
         {
@@ -48,7 +47,7 @@ namespace CHIP_8_dotNET.Chip8
 	            0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
 	            0xF0, 0x80, 0xF0, 0x80, 0x80  // F
         };
-        public byte[] keypad =
+        public int[] keypad =
         {
             0x1, 0x2, 0x3, 
             0x4, 0x5, 0x6, 
