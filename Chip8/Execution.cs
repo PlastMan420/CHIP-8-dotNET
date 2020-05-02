@@ -3,8 +3,7 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.IO;
 
 namespace CHIP_8_dotNET.Chip8
 {
@@ -12,27 +11,23 @@ namespace CHIP_8_dotNET.Chip8
     {
         private readonly Memory memory = new Memory();
         private readonly CPU cpu = new CPU();
-        public Execution() 
+        public Execution(string path) 
         {
-            
             InstructionSet instructionSet = new InstructionSet(ref memory, ref cpu);
-            cycle();
+            memory.programMemory = File.ReadAllBytes(path); //  load program into memory
+            memory.InitMemory();
+            cpu.PC = memory.liveMem[200];
+            Program();    //  start the program
         }
         
-        public void cycle()
+        public void Program()
         {
-            ushort counter = 200;
-            ushort operation = 0;
-            cpu.PC = memory.programMemory[0];
             while (true)
             {
                 
             }
 
         }
-        public ushort parse()
-        {
-            return (ushort)(cpu.PC & 0xF000u); 
-        }
+
     }
 }
