@@ -14,7 +14,7 @@ using System.Text;
 
 namespace CHIP_8_dotNET.Chip8
 {
-	 class Memory
+	 class Memory : IMemory
 	{
 		const   int systemSize                  = 0x4096;
 		const   int fontSetSize                 = 80;

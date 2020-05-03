@@ -20,7 +20,12 @@ namespace CHIP_8_dotNET.Chip8
         public  byte            SP;                          // stack pointer
         public  byte            delayTimer;
         public  byte            soundTimer;
-        public  Dictionary<ushort, Func<ushort>> Instruction = new Dictionary<ushort, Func<ushort>>();   //  method lookup
-        public CPU() { }
+
+        
+        
+
+        public CPU() 
+        {
+        }
     }
 }

@@ -9,25 +9,44 @@ namespace CHIP_8_dotNET.Chip8
 {
     class Execution
     {
-        private readonly Memory memory = new Memory();
-        private readonly CPU cpu = new CPU();
+        private Memory memory = new Memory();
+        private CPU cpu = new CPU();
+        //private readonly InstructionSet instructionSet = new InstructionSet(ref Memory, ref cpu);
         public Execution(string path) 
         {
-            InstructionSet instructionSet = new InstructionSet(ref memory, ref cpu);
-            memory.programMemory = File.ReadAllBytes(path); //  load program into memory
+            
+            memory.programMemory = File.ReadAllBytes(path); //  load program into programMemory[]
             memory.InitMemory();
-            cpu.PC = memory.liveMem[200];
+            cpu.PC = 0x200;
             Program();    //  start the program
         }
         
+        public void initCPU()
+        {
+            
+        }
         public void Program()
         {
+            cpu.IReg = memory.liveMem[cpu.PC];
             while (true)
             {
-                
+                Next();
+
             }
 
         }
+        public void Next() 
+        {
+            cpu.IReg    = memory.liveMem[cpu.PC];
+            ++cpu.PC;
+            cpu.IReg    *= 0x100;
+            cpu.IReg    += memory.liveMem[cpu.PC];
+            ++cpu.PC;
+        }
 
+        public void Parse()
+        {
+
+        }
     }
 }

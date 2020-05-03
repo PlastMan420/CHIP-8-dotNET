@@ -13,13 +13,18 @@ namespace CHIP_8_dotNET.Chip8
 	{
 		private readonly CPU cpu = new CPU();
 		private readonly Memory memory = new Memory();
-		//public byte Vx, Vy, data;
 		
 		public InstructionSet(ref Memory _memory, ref CPU _cpu)
 		{
 			memory = _memory;
 			cpu = _cpu;
 		}
+
+		public delegate void InstructionListDelegate(ushort opcode);
+		public Dictionary<int, InstructionListDelegate> InstructionList = new Dictionary<int, InstructionListDelegate>()
+		{
+			{0,  CLS_RET_00xx }
+		};
 
 		/// <summary>
 		/// Helper methods
@@ -58,14 +63,20 @@ namespace CHIP_8_dotNET.Chip8
 		}
 		/////////////////////////////////////////////////////////////////////////////////
 
-		public void CLS_00E0() // 0x00E0
-		{   // Clear video buffer (clears display)
-			memory.videoMemory = null;
-		}
-		public void RET_00EE() // 0x00EE
+		public void CLS_RET_00xx(ushort opcode)
 		{
-			--cpu.SP;
-			cpu.PC								=	memory.stack[cpu.SP];
+			(byte, byte) ParsedData = ParseData(ref opcode);
+			byte op = (byte)(ParsedData.Item2 & 0x00FF);
+			switch (op)
+			{
+				case 0x00E0:
+					memory.videoMemory = null;
+					break;
+				case 0x00EE:
+					--cpu.SP;
+					cpu.PC = memory.stack[cpu.SP];
+					break;
+			}
 		}
 
 		public void JMP_1nnn(ushort opcode) //op: 0x1nnn --> 1000 + a 12 bit address
