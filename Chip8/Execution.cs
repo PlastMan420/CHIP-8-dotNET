@@ -11,7 +11,7 @@ namespace CHIP_8_dotNET.Chip8
     {
         private Memory memory = new Memory();
         private CPU cpu = new CPU();
-        //private readonly InstructionSet instructionSet = new InstructionSet(ref Memory, ref cpu);
+        
         public Execution(string path) 
         {
             
@@ -21,31 +21,34 @@ namespace CHIP_8_dotNET.Chip8
             Program();    //  start the program
         }
         
-        public void initCPU()
-        {
-            
-        }
         public void Program()
         {
+            InstructionSet instructionSet = new InstructionSet(ref memory, ref cpu);
             cpu.IReg = memory.liveMem[cpu.PC];
             while (true)
             {
                 Next();
 
+                //  Dictionary<int, Action<ushort>>
+                //  int = Parse(). Action<ushort> is a delegate to void methods with 1 ushort parameter.
+                instructionSet.InstructionList[Parse()](cpu.IReg);  
             }
 
         }
-        public void Next() 
+        public void Next()  //  Next cycle. reads the upcoming 2 memory locations to form the next word.
+                            //  and stores in index register.
         {
             cpu.IReg    = memory.liveMem[cpu.PC];
-            ++cpu.PC;
             cpu.IReg    *= 0x100;
-            cpu.IReg    += memory.liveMem[cpu.PC];
-            ++cpu.PC;
+            cpu.IReg    += memory.liveMem[cpu.PC+1];
+            cpu.PC      += 0x002;
+            if (cpu.delayTimer > 0) --cpu.delayTimer;
+            if (cpu.soundTimer > 0) --cpu.soundTimer;
         }
 
-        public void Parse()
+        public int Parse()  //  parses the leftmost byte of a word to determine the next instruction.
         {
+            return (cpu.IReg & 0xF000) >> 12;
 
         }
     }

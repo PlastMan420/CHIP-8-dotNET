@@ -14,14 +14,16 @@ namespace CHIP_8_dotNET.Chip8
 		private readonly CPU cpu = new CPU();
 		private readonly Memory memory = new Memory();
 
+		//	Method lookup table 
 		public Action<ushort> InstructionListDelegate;
 		public Dictionary<int, Action<ushort>> InstructionList = new Dictionary<int, Action<ushort>>();
-
 
 		public InstructionSet(ref Memory _memory, ref CPU _cpu)
 		{
 			memory = _memory;
 			cpu = _cpu;
+
+			//	Method lookup table 
 			InstructionList.Add(0, this.CLS_RET_00xx);
 			InstructionList.Add(0x1, this.JMP_1nnn);
 			InstructionList.Add(0x2, this.CALL_2nnn);
