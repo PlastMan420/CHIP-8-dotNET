@@ -13,18 +13,34 @@ namespace CHIP_8_dotNET.Chip8
 	{
 		private readonly CPU cpu = new CPU();
 		private readonly Memory memory = new Memory();
-		
+
+		public Action<ushort> InstructionListDelegate;
+		public Dictionary<int, Action<ushort>> InstructionList = new Dictionary<int, Action<ushort>>();
+
+
 		public InstructionSet(ref Memory _memory, ref CPU _cpu)
 		{
 			memory = _memory;
 			cpu = _cpu;
+			InstructionList.Add(0, this.CLS_RET_00xx);
+			InstructionList.Add(0x1, this.JMP_1nnn);
+			InstructionList.Add(0x2, this.CALL_2nnn);
+			InstructionList.Add(0x3, this.SEQ_3xkk);
+			InstructionList.Add(0x4, this.SNE_4xkk);
+			InstructionList.Add(0x5, this.SE_5xy0);
+			InstructionList.Add(0x6, this.LD_6xkk);
+			InstructionList.Add(0x7, this.ADD_7xkk);
+			InstructionList.Add(0x8, this.Set_8000);
+			InstructionList.Add(0x9, this.SNE_9xy0);
+			InstructionList.Add(0xA, this.LD_Annn);
+			InstructionList.Add(0xB, this.JP_Bnnn);
+			InstructionList.Add(0xC, this.RND_Cxkk);
+			InstructionList.Add(0xD, this.DRW_Dxyn);
+			InstructionList.Add(0xE, this.SKIP_Exxx);
+			InstructionList.Add(0xF, this.LD_Fxxx);
 		}
 
-		public delegate void InstructionListDelegate(ushort opcode);
-		public Dictionary<int, InstructionListDelegate> InstructionList = new Dictionary<int, InstructionListDelegate>()
-		{
-			{0,  CLS_RET_00xx }
-		};
+
 
 		/// <summary>
 		/// Helper methods
@@ -84,7 +100,7 @@ namespace CHIP_8_dotNET.Chip8
 			ushort address						=	ParseAddress(ref opcode); // Casting to prevent Int promotions
 			cpu.PC								=	address;
 		}
-		public void CALL(ushort opcode) // 0x2nnn --> 2000 + a 12 bit address
+		public void CALL_2nnn(ushort opcode) // 0x2nnn --> 2000 + a 12 bit address
 		{
 			ushort address						=	ParseAddress(ref opcode);
 
