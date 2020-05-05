@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CHIP-8-dotNET": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\mosta\\source\\repos\\CHIP-8-dotNET\\bin\\Debug\\netcoreapp3.1\\pong.rom"
+    }
+  }
+}

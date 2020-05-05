@@ -16,10 +16,10 @@ namespace CHIP_8_dotNET.Chip8
 {
 	 class Memory
 	{
-		const   int systemSize                  = 0x4096;
+		const   int systemSize                  = 4096;
 		const   int fontSetSize                 = 80;
 		const	int keypadSize					= 16;
-		const   int interpreterSize             = 0x0180;	//	0x1FF - 0x80
+		const   int interpreterSize             = 0x01B0;	//	0x1FF - 0x80
 		const   int programSize                 = 0xCA1;	//	Starts at location 0x200 -> 0xEA0
 		const   int stackSize                   = 0x60;		//	96 bytes of stack
 		const	int videoSize					= 0xFF;     //	256 bytes 64x32 bits 0xF00 -> 0xFFF

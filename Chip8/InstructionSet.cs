@@ -24,7 +24,7 @@ namespace CHIP_8_dotNET.Chip8
 			cpu = _cpu;
 
 			//	Method lookup table 
-			InstructionList.Add(0, this.CLS_RET_00xx);
+			InstructionList.Add(0x0, this.SET_00xx);
 			InstructionList.Add(0x1, this.JMP_1nnn);
 			InstructionList.Add(0x2, this.CALL_2nnn);
 			InstructionList.Add(0x3, this.SEQ_3xkk);
@@ -81,7 +81,7 @@ namespace CHIP_8_dotNET.Chip8
 		}
 		/////////////////////////////////////////////////////////////////////////////////
 
-		public void CLS_RET_00xx(ushort opcode)
+		public void SET_00xx(ushort opcode)
 		{
 			(byte, byte) ParsedData = ParseData(ref opcode);
 			byte op = (byte)(ParsedData.Item2 & 0x00FF);
@@ -94,6 +94,8 @@ namespace CHIP_8_dotNET.Chip8
 					--cpu.SP;
 					cpu.PC = memory.stack[cpu.SP];
 					break;
+				default:
+					return;
 			}
 		}
 
