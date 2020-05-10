@@ -22,7 +22,7 @@ namespace CHIP_8_dotNET.Chip8
 		const   int interpreterSize             = 0x01B0;	//	0x1FF - 0x80
 		const   int programSize                 = 0xCA1;	//	Starts at location 0x200 -> 0xEA0
 		const   int stackSize                   = 0x60;		//	96 bytes of stack
-		const	int videoSize					= 0xFF;     //	256 bytes 64x32 bits 0xF00 -> 0xFFF
+		const	int videoSize					= 64*32;     //	256 bytes 64x32 bits 0xF00 -> 0xFFF
 
 		public  byte[] liveMem                  = new byte[systemSize];
 		public  byte[] interpreterMemory        = new byte[interpreterSize];

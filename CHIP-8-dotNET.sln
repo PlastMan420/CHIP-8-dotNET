@@ -4,8 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CHIP-8-dotNET", "CHIP-8-dotNET.csproj", "{11228CA0-51D5-4908-8783-1FF411ED29E2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{85480198-8711-4355-830E-72FD794AD3F6} = {85480198-8711-4355-830E-72FD794AD3F6}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDL2-CS", "..\SDL2-CS-master\SDL2-CS-master\SDL2-CS.csproj", "{85480198-8711-4355-830E-72FD794AD3F6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDL2-CS", "..\SDL2-CS-master\SDL2-CS.csproj", "{85480198-8711-4355-830E-72FD794AD3F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -83,12 +83,13 @@ namespace CHIP_8_dotNET.Chip8
 
 		public void SET_00xx(ushort opcode)
 		{
+			
 			(byte, byte) ParsedData = ParseData(ref opcode);
 			byte op = (byte)(ParsedData.Item2 & 0x00FF);
 			switch (op)
 			{
 				case 0x00E0:
-					memory.videoMemory = null;
+					Array.Clear(memory.videoMemory, 0, memory.videoMemory.Length);
 					break;
 				case 0x00EE:
 					--cpu.SP;
@@ -101,11 +102,13 @@ namespace CHIP_8_dotNET.Chip8
 
 		public void JMP_1nnn(ushort opcode) //op: 0x1nnn --> 1000 + a 12 bit address
 		{
+			
 			ushort address						=	ParseAddress(ref opcode); // Casting to prevent Int promotions
 			cpu.PC								=	address;
 		}
 		public void CALL_2nnn(ushort opcode) // 0x2nnn --> 2000 + a 12 bit address
 		{
+			
 			ushort address						=	ParseAddress(ref opcode);
 
 			memory.stack[cpu.SP]				=	(byte)cpu.PC;
@@ -114,6 +117,7 @@ namespace CHIP_8_dotNET.Chip8
 		}
 		public void SEQ_3xkk(ushort opcode)   // 0x3XKK --> 0x3000 + (x = register number) + (kk = value)
 		{
+			
 			(byte, byte) parsedData				=	ParseData(ref opcode);	// compute once and store  in a (byte, byte)
 			byte	Vx							=	parsedData.Item1;			// Get register number
 			byte	data						=	parsedData.Item2;			// fetch data
@@ -122,6 +126,7 @@ namespace CHIP_8_dotNET.Chip8
 		}
 		public void SNE_4xkk(ushort opcode) // Skip next instruction if Vx != kk.
 		{
+			
 			(byte, byte)	parsedData			=	ParseData(ref opcode);    // compute once and store  in a (byte, byte)
 			byte			Vx					=	parsedData.Item1;			// Get register number
 			byte			 data				=	parsedData.Item2;			// fetch data
@@ -130,6 +135,7 @@ namespace CHIP_8_dotNET.Chip8
 		}
 		public void SE_5xy0(ushort opcode)  // Skip next instruction if Vx = Vy.
 		{
+			
 			(byte, byte, byte) parsedRegisters	= ParseRegisters(ref opcode);
 			byte Vx								= parsedRegisters.Item1;
 			byte Vy								= parsedRegisters.Item2;
@@ -140,6 +146,7 @@ namespace CHIP_8_dotNET.Chip8
 
 		public void LD_6xkk(ushort opcode)  // Set Vx = kk.
 		{
+			
 			(byte, byte)	parsedData			=	ParseData(ref opcode);    // compute once and store  in a (byte, byte)
 			byte			Vx					=	parsedData.Item1;         // Get register number
 			byte			data				=	parsedData.Item2;         // fetch data
@@ -147,6 +154,7 @@ namespace CHIP_8_dotNET.Chip8
 		}
 		public void ADD_7xkk(ushort opcode) // Set Vx = Vx + kk.
 		{
+			
 			(byte, byte)	parsedData			=	ParseData(ref opcode);    // compute once and store  in a (byte, byte)
 			byte			Vx					=	parsedData.Item1;         // Get register number
 			byte			data				=	parsedData.Item2;         // fetch data
@@ -161,6 +169,7 @@ namespace CHIP_8_dotNET.Chip8
 		/// <param name="opcode"></param>
 		public void Set_8000(ushort opcode)
 		{
+			
 			(byte, byte, byte) parsedRegisters = ParseRegisters(ref opcode);
 			byte Vx = parsedRegisters.Item1;
 			byte Vy = parsedRegisters.Item2;
@@ -213,20 +222,24 @@ namespace CHIP_8_dotNET.Chip8
 		}
 		public void SNE_9xy0(ushort opcode) // 9xy0 - SNE Vx, Vy.  // Skip next instruction if Vx != Vy.
 		{
+			
 			(byte, byte, byte) parsedRegisters = ParseRegisters(ref opcode);
 			byte Vx = parsedRegisters.Item1;
 			byte Vy = parsedRegisters.Item2;
 		}
 		public void LD_Annn(ushort opcode)  //  set I = nnn
 		{
+			
 			cpu.IReg						=	ParseAddress(ref opcode);
 		}
 		public void JP_Bnnn(ushort opcode)  //  Jump to location nnn + V0.
 		{
+			
 			cpu.PC							=	(ushort)(cpu.registers[0] + ParseAddress(ref opcode));
 		}
 		public void RND_Cxkk(ushort opcode) //  Set Vx = random byte AND kk.
 		{
+			
 			(byte, byte) parsedData			=	ParseData(ref opcode);		// compute once and store in a (byte, byte)
 			byte Vx							=	parsedData.Item1;			// Get register number
 			byte data						=	parsedData.Item2;			// fetch data
@@ -245,49 +258,63 @@ namespace CHIP_8_dotNET.Chip8
 		 *	We can’t XOR directly because the sprite pixel is either 1 or 0 while our video pixel is either 0x00000000 or 0xFFFFFFFF.
 		 */
 		{
-			const byte VIDEO_WIDTH	= 64;
-			const byte VIDEO_HEIGHT	= 32;
-			(byte, byte, byte) parsedRegisters = ParseRegisters(ref opcode);
-			byte Vx		= parsedRegisters.Item1;
-			byte Vy		= parsedRegisters.Item2;
-			byte height = parsedRegisters.Item3;
 
-			// Wrap if going beyond screen boundaries
-			byte xPos = (byte)(cpu.registers[Vx] % VIDEO_WIDTH);
-			byte yPos = (byte)(cpu.registers[Vy] % VIDEO_HEIGHT);
-
-			cpu.registers[cpu.Vf] = 0;
-			//uint *screenPixel;
-			byte spritePixel;
-			byte spriteByte;
-
-			for (byte row = 0; row < height; ++row)
+			try
 			{
-				spriteByte = memory.liveMem[cpu.IReg + row];
+				const byte VIDEO_WIDTH	= 64;
+				const byte VIDEO_HEIGHT	= 32;
+				(byte, byte, byte) parsedRegisters = ParseRegisters(ref opcode);
+				byte Vx		= parsedRegisters.Item1;
+				byte Vy		= parsedRegisters.Item2;
+				byte height = parsedRegisters.Item3;
 
-				for (byte col = 0; col < 8; ++col)
+				// Wrap if going beyond screen boundaries
+				byte xPos = (byte)(cpu.registers[Vx] % VIDEO_WIDTH);
+				byte yPos = (byte)(cpu.registers[Vy] % VIDEO_HEIGHT);
+
+				cpu.registers[cpu.Vf] = 0;
+				//uint *screenPixel;
+				byte spritePixel;
+				byte spriteByte;
+				int	 index;
+				for (byte row = 0; row < height; ++row)	//	rows
 				{
-					spritePixel = (byte)(spriteByte & (0x80u >> col));
-					fixed (uint *screenPixel = &memory.videoMemory[(yPos + row) * VIDEO_WIDTH + (xPos + col)]) 
-					{
-						// Sprite pixel is on
-						if (spritePixel > 0)
-						{
-							// Screen pixel also on - collision
-							if (*screenPixel == 0xFFFFFFFF)
-							{
-								cpu.registers[15] = 1;
-							}
+					Console.WriteLine("CPU.IREG+row: {0:x}", cpu.IReg + row);
+					spriteByte = memory.liveMem[cpu.IReg + row];
 
-							// Effectively XOR with the sprite pixel
-							*screenPixel ^= 0xFFFFFFFF;
+					for (byte col = 0; col < 8; ++col)	//	columns
+					{
+						spritePixel = (byte)(spriteByte & (0x80u >> col));
+						index		= (yPos + row) * VIDEO_WIDTH + (xPos + col);
+						if (index > 2047) continue;
+						fixed (uint* screenPixel = &memory.videoMemory[index])
+						{
+							Console.WriteLine("index: {0:x}", index);
+							// Sprite pixel is on
+							if (spritePixel > 0)
+							{
+								// Screen pixel also on - collision
+								if (*screenPixel == 0xFFFFFFFF)
+								{
+									cpu.registers[15] = 1;
+								}
+
+								// Effectively XOR with the sprite pixel
+								*screenPixel ^= 0xFFFFFFFF;
+							}
 						}
 					}
 				}
 			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message + "opcode: {0:x}", opcode);
+				
+			}
 		}
 		public void SKIP_Exxx(ushort opcode)
 		{
+			
 			(byte, byte) parsedData			=	ParseData(ref opcode);		//	Compute once and store in a (byte, byte)
 			byte Vx							=	parsedData.Item1;			//	Get register number
 			byte op							=	parsedData.Item2;			//	Fetch data
@@ -305,6 +332,7 @@ namespace CHIP_8_dotNET.Chip8
 		}
 		public void LD_Fxxx(ushort opcode)	//	0xFxDD
 		{
+			
 			(byte, byte)	parsedData		=	ParseData(ref opcode);		// compute once and store in a (byte, byte)
 			byte			Vx				=	parsedData.Item1;			// Get register number
 			byte			op				=	parsedData.Item2;           // fetch data

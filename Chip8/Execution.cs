@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using SDL2;
 
 namespace CHIP_8_dotNET.Chip8
@@ -12,7 +13,7 @@ namespace CHIP_8_dotNET.Chip8
     {
         private Memory memory = new Memory();
         private CPU cpu = new CPU();
-        ushort opcode;
+        ushort  opcode;
         public Execution(string path) 
         {
             memory.programMemory = File.ReadAllBytes(path); //  load program into programMemory[]
@@ -27,37 +28,87 @@ namespace CHIP_8_dotNET.Chip8
         public void Program()
         {
             InstructionSet instructionSet = new InstructionSet(ref memory, ref cpu);
-            opcode        = memory.liveMem[cpu.PC];
 
-            IntPtr window   = SDL.SDL_CreateWindow("Chip-8.NET", 0, 0, 64 * 8, 32 * 8, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
-            var renderer    = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+            // IntPtr window = SDL.SDL_CreateWindow("Chip-8 Interpreter", 128, 128, 64 * 8, 32 * 8, 0);
+            // var renderer    = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+            // var texture     = SDL.SDL_CreateTexture(
+            //    renderer, SDL.SDL_PIXELFORMAT_RGBA8888, Convert.ToInt32(SDL.SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING) , 64, 32);
+            if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) < 0)
+            {
+                Console.WriteLine("SDL failed to init.");
+                return;
+            }
 
+            IntPtr window = SDL.SDL_CreateWindow("Chip-8 Interpreter", 128, 128, 64 * 8, 32 * 8, 0);
+
+            if (window == IntPtr.Zero)
+            {
+                Console.WriteLine("SDL could not create a window.");
+                return;
+            }
+
+            IntPtr renderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+
+            if (renderer == IntPtr.Zero)
+            {
+                Console.WriteLine("SDL could not create a valid renderer.");
+                return;
+            }
+            int pitch       = 4 * 64;   //  sizeof(chip8.video[0]) * VIDEO_WIDTH;
+            Console.WriteLine("program starting");
+            IntPtr sdlSurface, sdlTexture = IntPtr.Zero;
             SDL.SDL_Event sdlEvent;
-
             bool run = true;
             while (run)
             {
-                Next();
-                while (SDL.SDL_PollEvent(out sdlEvent) != 0)
+
+                try
                 {
-                    if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT) run = false;
+                    Next();
+                    /*
+                        Dictionary<int, Action<ushort>>
+                        int = Parse(). Action<ushort> is a delegate to void methods with 1 ushort parameter.
+                    */
+                    instructionSet.InstructionList[Parse()](opcode);
+
+                    while (SDL.SDL_PollEvent(out sdlEvent) != 0)
+                    {
+                        if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                        {
+                            run = false;
+                        }
+                    }
+                    var displayHandle = GCHandle.Alloc(memory.videoMemory, GCHandleType.Pinned);
+
+                    if (sdlTexture != IntPtr.Zero) SDL.SDL_DestroyTexture(sdlTexture);
+
+                    sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(displayHandle.AddrOfPinnedObject(), 64, 32, 32, 64 * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+                    sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
+
+                    displayHandle.Free();
+
+                    SDL.SDL_RenderClear(renderer);
+                    SDL.SDL_RenderCopy(renderer, sdlTexture, IntPtr.Zero, IntPtr.Zero);
+                    SDL.SDL_RenderPresent(renderer);
                 }
-
-                /*
-                  Dictionary<int, Action<ushort>>
-                  int = Parse(). Action<ushort> is a delegate to void methods with 1 ushort parameter.
-                */
-                instructionSet.InstructionList[Parse()](opcode);  
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message + ", main loop error");
+                }
             }
-
+            SDL.SDL_DestroyRenderer(renderer);
+            SDL.SDL_DestroyWindow(window);
+            Console.WriteLine("program exited");
         }
-        public void Next()  //  Next cycle. reads the upcoming 2 memory locations to form the next word.
-                            //  and stores in index register.
+        public void Next()  //  Fetches upcoming instruction for decoding.
         {
+            Console.WriteLine("cpu.pc: {0:x}", cpu.PC);
+
             opcode  = memory.liveMem[cpu.PC];
             opcode  *= 0x100;
             opcode  += memory.liveMem[cpu.PC+1];
-            opcode  += 0x002;
+            cpu.PC  += 2;
+            Console.WriteLine("opcode: {0:x}", opcode);
             if (cpu.delayTimer > 0) --cpu.delayTimer;
             if (cpu.soundTimer > 0) --cpu.soundTimer;
         }
@@ -67,5 +118,7 @@ namespace CHIP_8_dotNET.Chip8
             return (opcode & 0xF000) >> 12;
 
         }
+
     }
 }
+
