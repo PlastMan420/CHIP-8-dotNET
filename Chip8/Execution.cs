@@ -20,6 +20,7 @@ namespace CHIP_8_dotNET.Chip8
             memory.InitMemory();
 
             cpu.PC          = 0x200;
+            cpu.SP          = memory.liveMem[0xEA0];
             cpu.delayTimer  = 0;
             cpu.soundTimer  = 0;
             Program();    //  start the program
@@ -39,7 +40,10 @@ namespace CHIP_8_dotNET.Chip8
                 return;
             }
 
-            IntPtr window = SDL.SDL_CreateWindow("Chip-8 Interpreter", 128, 128, 64 * 8, 32 * 8, 0);
+            const int videoScale = 15;
+            const int pitch = 4 * 64;   //  sizeof(chip8.video[0]) * VIDEO_WIDTH;
+
+            IntPtr window = SDL.SDL_CreateWindow("Chip-8 Interpreter", 128, 128, 64 * videoScale, 32 * videoScale, SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN);
 
             if (window == IntPtr.Zero)
             {
@@ -54,7 +58,7 @@ namespace CHIP_8_dotNET.Chip8
                 Console.WriteLine("SDL could not create a valid renderer.");
                 return;
             }
-            int pitch       = 4 * 64;   //  sizeof(chip8.video[0]) * VIDEO_WIDTH;
+            
             Console.WriteLine("program starting");
             IntPtr sdlSurface, sdlTexture = IntPtr.Zero;
             SDL.SDL_Event sdlEvent;
@@ -82,7 +86,7 @@ namespace CHIP_8_dotNET.Chip8
 
                     if (sdlTexture != IntPtr.Zero) SDL.SDL_DestroyTexture(sdlTexture);
 
-                    sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(displayHandle.AddrOfPinnedObject(), 64, 32, 32, 64 * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+                    sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(displayHandle.AddrOfPinnedObject(), 64, 32, 32, pitch, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
                     sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
 
                     displayHandle.Free();
@@ -103,14 +107,20 @@ namespace CHIP_8_dotNET.Chip8
         public void Next()  //  Fetches upcoming instruction for decoding.
         {
             Console.WriteLine("cpu.pc: {0:x}", cpu.PC);
-
-            opcode  = memory.liveMem[cpu.PC];
-            opcode  *= 0x100;
-            opcode  += memory.liveMem[cpu.PC+1];
-            cpu.PC  += 2;
-            Console.WriteLine("opcode: {0:x}", opcode);
-            if (cpu.delayTimer > 0) --cpu.delayTimer;
-            if (cpu.soundTimer > 0) --cpu.soundTimer;
+            try
+            {
+                opcode = memory.liveMem[cpu.PC];
+                opcode *= 0x100;
+                opcode += memory.liveMem[cpu.PC + 1];
+                cpu.PC += 2;
+                Console.WriteLine("opcode: {0:x}", opcode);
+                if (cpu.delayTimer > 0) --cpu.delayTimer;
+                if (cpu.soundTimer > 0) --cpu.soundTimer;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message + ", program decoding error");
+            }
         }
 
         public int Parse()  //  parses the leftmost byte of a word to determine the next instruction.

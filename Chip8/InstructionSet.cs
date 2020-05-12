@@ -89,11 +89,13 @@ namespace CHIP_8_dotNET.Chip8
 			switch (op)
 			{
 				case 0x00E0:
-					Array.Clear(memory.videoMemory, 0, memory.videoMemory.Length);
+					for (int i = 0; i < memory.videoMemory.Length; i++) memory.videoMemory[i] = 0;
+					Array.Clear(memory.videoMemory, 0, 64*32);
 					break;
 				case 0x00EE:
+					memory.liveMem[cpu.SP] = 0;
 					--cpu.SP;
-					cpu.PC = memory.stack[cpu.SP];
+					cpu.PC = memory.liveMem[cpu.SP];
 					break;
 				default:
 					return;
@@ -111,7 +113,7 @@ namespace CHIP_8_dotNET.Chip8
 			
 			ushort address						=	ParseAddress(ref opcode);
 
-			memory.stack[cpu.SP]				=	(byte)cpu.PC;
+			memory.liveMem[cpu.SP]				=	(byte)cpu.PC;
 			++cpu.SP;	
 			cpu.PC								=	address;
 		}
@@ -261,11 +263,11 @@ namespace CHIP_8_dotNET.Chip8
 
 			try
 			{
-				const byte VIDEO_WIDTH	= 64;
-				const byte VIDEO_HEIGHT	= 32;
+				const byte VIDEO_WIDTH = 64;
+				const byte VIDEO_HEIGHT = 32;
 				(byte, byte, byte) parsedRegisters = ParseRegisters(ref opcode);
-				byte Vx		= parsedRegisters.Item1;
-				byte Vy		= parsedRegisters.Item2;
+				byte Vx = parsedRegisters.Item1;
+				byte Vy = parsedRegisters.Item2;
 				byte height = parsedRegisters.Item3;
 
 				// Wrap if going beyond screen boundaries
@@ -276,40 +278,42 @@ namespace CHIP_8_dotNET.Chip8
 				//uint *screenPixel;
 				byte spritePixel;
 				byte spriteByte;
-				int	 index;
-				for (byte row = 0; row < height; ++row)	//	rows
-				{
-					Console.WriteLine("CPU.IREG+row: {0:x}", cpu.IReg + row);
-					spriteByte = memory.liveMem[cpu.IReg + row];
-
-					for (byte col = 0; col < 8; ++col)	//	columns
+				int index;
+				
+				
+					for (byte row = 0; row < height; ++row) //	rows
 					{
-						spritePixel = (byte)(spriteByte & (0x80u >> col));
-						index		= (yPos + row) * VIDEO_WIDTH + (xPos + col);
-						if (index > 2047) continue;
-						fixed (uint* screenPixel = &memory.videoMemory[index])
-						{
-							Console.WriteLine("index: {0:x}", index);
-							// Sprite pixel is on
-							if (spritePixel > 0)
-							{
-								// Screen pixel also on - collision
-								if (*screenPixel == 0xFFFFFFFF)
-								{
-									cpu.registers[15] = 1;
-								}
+						//Console.WriteLine("CPU.IREG+row: {0:x}", cpu.IReg + row);
+						spriteByte = memory.liveMem[cpu.IReg + row];
 
-								// Effectively XOR with the sprite pixel
-								*screenPixel ^= 0xFFFFFFFF;
+						for (byte col = 0; col < 8; ++col)  //	columns
+						{
+							spritePixel = (byte)(spriteByte & (0x80u >> col));
+							index = (xPos + col) + (yPos + row) * VIDEO_WIDTH;
+							if (index > 2047) continue;
+							fixed (uint* screenPixel = &memory.videoMemory[index])
+							{
+								//Console.WriteLine("index: {0:x}", index);
+								// Sprite pixel is on
+								if (spritePixel > 0)
+								{
+									// Screen pixel also on - collision
+									if (*screenPixel == 0xFFFFFFFF)
+									{
+										cpu.registers[15] = 1;
+									}
+
+									// Effectively XOR with the sprite pixel
+									*screenPixel ^= 0xFFFFFFFF;
+								}
 							}
 						}
 					}
-				}
+				
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.Message + "opcode: {0:x}", opcode);
-				
+				Console.WriteLine(e.Message + ", ");
 			}
 		}
 		public void SKIP_Exxx(ushort opcode)
@@ -328,6 +332,8 @@ namespace CHIP_8_dotNET.Chip8
 				case 0xA1:		//	Skip next instruction if key with the value of Vx is not pressed.
 					if (input	==	key) cpu.PC	+=	2;
 					break;
+				default:
+					throw new System.ArgumentException("Invalid Exxx opcode");
 			}
 		}
 		public void LD_Fxxx(ushort opcode)	//	0xFxDD
