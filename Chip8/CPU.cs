@@ -12,7 +12,6 @@ namespace CHIP_8_dotNET.Chip8
         public  int             Vf = 15;
         public  ushort          IReg;                        // index register
         public  ushort          PC;                          // program counter
-        public  byte            SP;                          // stack pointer
         public  byte            delayTimer;
         public  byte            soundTimer;
 

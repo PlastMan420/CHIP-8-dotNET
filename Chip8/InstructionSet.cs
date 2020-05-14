@@ -49,21 +49,21 @@ namespace CHIP_8_dotNET.Chip8
 		/// </summary>
 		public (byte, byte) ParseData(ref ushort opcode)
 		{
-			byte	Vx		=	(byte)((opcode & 0x0F00u) >> 8);
+			byte	rx		=	(byte)((opcode & 0x0F00u) >> 8);
 			byte	data	=	(byte)(opcode & 0x00FFu);
-			return	(Vx, data);
+			return	(rx, data);
 		}
 		public (byte, byte, byte) ParseRegisters(ref ushort opcode)
 		{
-			byte	Vx	=	(byte)((opcode & 0x0F00u) >> 8);
-			byte	Vy	=	(byte)((opcode & 0x00F0u) >> 4);
-			byte	op	=	(byte)(opcode & 0x00F0u);
-			return (Vx, Vy, op);
+			byte	rx	=	(byte)((opcode & 0x0F00) >> 8);
+			byte	ry	=	(byte)((opcode & 0x00F0) >> 4);
+			byte	op	=	(byte)(opcode & 0x00F0);
+			return (rx, ry, op);
 		}
 		public ushort ParseAddress(ref ushort opcode)
 		{
-			ushort address = (ushort)(opcode & 0x0FFFu); // min possible address is 0x200
-			return address;
+			return (ushort)(opcode & 0x0FFFu); // min possible address is 0x200
+			//return address;
 		}
 		public byte RandByte()    // returns a random byte 
 		{
@@ -74,10 +74,10 @@ namespace CHIP_8_dotNET.Chip8
 		public byte ReadInput()
 		{
 			int	input	=	Convert.ToInt32(Console.ReadKey());
-			if(memory.keypad.Contains(input))	
-				return	Convert.ToByte(input);
-			
-			return	ReadInput();
+			if (memory.keypad.Contains(input))
+				return Convert.ToByte(input);
+
+			return	ReadInput(); // 'wait' for a valid key input
 		}
 		/////////////////////////////////////////////////////////////////////////////////
 
@@ -85,82 +85,80 @@ namespace CHIP_8_dotNET.Chip8
 		{
 			
 			(byte, byte) ParsedData = ParseData(ref opcode);
-			byte op = (byte)(ParsedData.Item2 & 0x00FF);
+			byte op = (byte)(ParsedData.Item2);
 			switch (op)
 			{
 				case 0x00E0:
-					for (int i = 0; i < memory.videoMemory.Length; i++) memory.videoMemory[i] = 0;
 					Array.Clear(memory.videoMemory, 0, 64*32);
 					break;
-				case 0x00EE:
-					memory.liveMem[cpu.SP] = 0;
-					--cpu.SP;
-					cpu.PC = memory.liveMem[cpu.SP];
+				case 0x00EE: // stack POP
+					//	cpu.PC = memory.stack[cpu.SP];
+					//--cpu.SP;
+					cpu.PC = memory.stack.Pop();
 					break;
 				default:
 					return;
 			}
 		}
 
-		public void JMP_1nnn(ushort opcode) //op: 0x1nnn --> 1000 + a 12 bit address
+		public void JMP_1nnn(ushort opcode) //	jump to nnn
 		{
 			
-			ushort address						=	ParseAddress(ref opcode); // Casting to prevent Int promotions
-			cpu.PC								=	address;
+			//ushort address						=	ParseAddress(ref opcode);
+			cpu.PC								=	ParseAddress(ref opcode);
 		}
-		public void CALL_2nnn(ushort opcode) // 0x2nnn --> 2000 + a 12 bit address
+		public void CALL_2nnn(ushort opcode) //	Store PC in stack thrn jump to nnn
 		{
-			
-			ushort address						=	ParseAddress(ref opcode);
-
-			memory.liveMem[cpu.SP]				=	(byte)cpu.PC;
-			++cpu.SP;	
-			cpu.PC								=	address;
+			//ushort address						=	ParseAddress(ref opcode);
+			//memory.stack[cpu.SP]				=	(byte)cpu.PC;
+			//++cpu.SP;	
+			memory.stack.Push(cpu.PC);
+			cpu.PC								= ParseAddress(ref opcode);
 		}
 		public void SEQ_3xkk(ushort opcode)   // 0x3XKK --> 0x3000 + (x = register number) + (kk = value)
 		{
 			
 			(byte, byte) parsedData				=	ParseData(ref opcode);	// compute once and store  in a (byte, byte)
-			byte	Vx							=	parsedData.Item1;			// Get register number
+			byte	rx							=	parsedData.Item1;			// Get register number
 			byte	data						=	parsedData.Item2;			// fetch data
-			if (cpu.registers[Vx]	==	data)
+			if (cpu.registers[rx]	==	data)
 				cpu.PC	+=	2;
 		}
-		public void SNE_4xkk(ushort opcode) // Skip next instruction if Vx != kk.
+		public void SNE_4xkk(ushort opcode) // Skip next instruction if rx != kk.
 		{
 			
-			(byte, byte)	parsedData			=	ParseData(ref opcode);    // compute once and store  in a (byte, byte)
-			byte			Vx					=	parsedData.Item1;			// Get register number
-			byte			 data				=	parsedData.Item2;			// fetch data
-			if (cpu.registers[Vx] != data)
+			(byte, byte)	parsedData			= ParseData(ref opcode);    // compute once and store  in a (byte, byte)
+			byte			rx					= parsedData.Item1;			// Get register number
+			byte			data				= parsedData.Item2;			// fetch data
+			if (cpu.registers[rx] != data)
 				cpu.PC += 2;
 		}
-		public void SE_5xy0(ushort opcode)  // Skip next instruction if Vx = Vy.
+		public void SE_5xy0(ushort opcode)  // Skip next instruction if rx = ry.
 		{
 			
 			(byte, byte, byte) parsedRegisters	= ParseRegisters(ref opcode);
-			byte Vx								= parsedRegisters.Item1;
-			byte Vy								= parsedRegisters.Item2;
+			byte rx								= parsedRegisters.Item1;
+			byte ry								= parsedRegisters.Item2;
 			byte op								= parsedRegisters.Item3;
-			if (cpu.registers[Vx] == cpu.registers[Vy])
+			if (cpu.registers[rx] == cpu.registers[ry])
 				cpu.PC += 2;
 		}
 
-		public void LD_6xkk(ushort opcode)  // Set Vx = kk.
+		public void LD_6xkk(ushort opcode)  // Set rx = kk.
 		{
 			
-			(byte, byte)	parsedData			=	ParseData(ref opcode);    // compute once and store  in a (byte, byte)
-			byte			Vx					=	parsedData.Item1;         // Get register number
-			byte			data				=	parsedData.Item2;         // fetch data
-			cpu.registers[Vx] = data;
+			(byte, byte)	parsedData			= ParseData(ref opcode);    // compute once and store  in a (byte, byte)
+			byte			rx					= parsedData.Item1;         // Get register number
+			byte			data				= parsedData.Item2;         // fetch data
+			cpu.registers[rx]					= data;
 		}
-		public void ADD_7xkk(ushort opcode) // Set Vx = Vx + kk.
+		public void ADD_7xkk(ushort opcode) // Set rx = rx + kk.
 		{
 			
-			(byte, byte)	parsedData			=	ParseData(ref opcode);    // compute once and store  in a (byte, byte)
-			byte			Vx					=	parsedData.Item1;         // Get register number
-			byte			data				=	parsedData.Item2;         // fetch data
-			cpu.registers[Vx] += data;
+			(byte, byte)	parsedData			= ParseData(ref opcode);    // compute once and store  in a (byte, byte)
+			byte			rx					= parsedData.Item1;         // Get register number
+			byte			data				= parsedData.Item2;         // fetch data
+			cpu.registers[rx] += data;
 		}
 
 
@@ -173,84 +171,90 @@ namespace CHIP_8_dotNET.Chip8
 		{
 			
 			(byte, byte, byte) parsedRegisters = ParseRegisters(ref opcode);
-			byte Vx = parsedRegisters.Item1;
-			byte Vy = parsedRegisters.Item2;
+			byte rx = parsedRegisters.Item1;
+			byte ry = parsedRegisters.Item2;
 			byte op = parsedRegisters.Item3;
 			switch (op)
 			{
-				case	0x0:         // Load Vy into Vx
-					cpu.registers[Vx] = cpu.registers[Vy];
+				case	0x0:         // Load ry into rx
+					cpu.registers[rx] = cpu.registers[ry];
 					break;
 
 				case	0x1:        // AND
-					cpu.registers[Vx] &= cpu.registers[Vy];
+					cpu.registers[rx] &= cpu.registers[ry];
 					break;
 
 				case	0x2:       // OR
-					cpu.registers[Vx] |= cpu.registers[Vy];
+					cpu.registers[rx] |= cpu.registers[ry];
 					break;
 
 				case	0x3:      // XOR
-					cpu.registers[Vx] ^= cpu.registers[Vy];
+					cpu.registers[rx] ^= cpu.registers[ry];
 					break;
 
 				case	0x4:      // summing 2 registers.
-					int sum = (cpu.registers[Vx] + cpu.registers[Vy]);
-					if (sum > 255u) cpu.registers[15] = 1; else cpu.registers[15] = 0;
-					cpu.registers[Vx] = (byte)(sum & 0xFFu);
+					int sum = (cpu.registers[rx] + cpu.registers[ry]);
+					if (sum > 255u) cpu.registers[cpu.Vf] = 1; else cpu.registers[cpu.Vf] = 0;
+					cpu.registers[rx] = (byte)(sum & 0xFFu);
 					break;
 
-				case	0x5:     // subtracting Vy from Vx.
-					if (cpu.registers[Vx] > cpu.registers[Vy]) cpu.registers[15]	=	1; else cpu.registers[15] = 0;
-					cpu.registers[Vx]	-= cpu.registers[Vy];
+				case	0x5:     // subtracting ry from rx.
+					if (cpu.registers[rx] > cpu.registers[ry]) cpu.registers[15] = 1; else cpu.registers[cpu.Vf] = 0;
+					cpu.registers[rx]	-= cpu.registers[ry];
 					break;
 
 				case 0x6:
-					cpu.registers[15] = (byte)(cpu.registers[15] & 0x1u);
-					cpu.registers[Vx] >>= 1;
+					cpu.registers[cpu.Vf]	= (byte)(cpu.registers[15] & 0x1u);
+					cpu.registers[rx]		= (byte)(cpu.registers[rx] >> 1);
 					break;
 
-				case 0x7:      // SUBN Vx, Vy         // Set Vx = Vy - Vx, set VF = NOT borrow.
-					if (cpu.registers[Vy] > cpu.registers[Vx]) cpu.registers[15] = 1; else cpu.registers[15] = 0;
-					cpu.registers[Vx] = (byte)(cpu.registers[Vy] - cpu.registers[Vx]);
+				case 0x7:      // SUBN rx, ry         // Set rx = ry - rx, set VF = NOT borrow.
+					if (cpu.registers[ry] > cpu.registers[rx]) cpu.registers[15] = 1; else cpu.registers[cpu.Vf] = 0;
+					cpu.registers[rx] = (byte)(cpu.registers[ry] - cpu.registers[rx]);
 					break;
 
-				case 0xE:   // SHL Vx {, Vy}   // Set Vx = Vx SHL 1. 
-					cpu.registers[15] = (byte)((cpu.registers[Vx] & 0x80u) >> 7);
-					cpu.registers[Vx] <<= 1;
+				case 0xE:   
+					//	If the most-significant bit of rx is 1, then VF is set to 1, otherwise to 0. Then rx is multiplied by 2.
+					//	A left shift is performed(multiplication by 2), and the most significant bit is saved in Register VF.
+					cpu.registers[cpu.Vf] = (byte)(((cpu.registers[rx] & 0x80) == 0x80) ? 1 : 0);
+					cpu.registers[rx] = (byte)(cpu.registers[rx] << 1);
 					break;
+				default:
+					throw new System.ArgumentException("Invalid 8xxx opcode");
 			}
-				
+
 		}
-		public void SNE_9xy0(ushort opcode) // 9xy0 - SNE Vx, Vy.  // Skip next instruction if Vx != Vy.
+		public void SNE_9xy0(ushort opcode) // 9xy0 - SNE rx, ry.  // Skip next instruction if rx != ry.
 		{
 			
 			(byte, byte, byte) parsedRegisters = ParseRegisters(ref opcode);
-			byte Vx = parsedRegisters.Item1;
-			byte Vy = parsedRegisters.Item2;
+			byte rx = parsedRegisters.Item1;
+			byte ry = parsedRegisters.Item2;
+			if (cpu.registers[rx] != cpu.registers[ry])
+			{
+				cpu.PC += 2;
+			}
 		}
 		public void LD_Annn(ushort opcode)  //  set I = nnn
 		{
-			
 			cpu.IReg						=	ParseAddress(ref opcode);
 		}
 		public void JP_Bnnn(ushort opcode)  //  Jump to location nnn + V0.
 		{
-			
 			cpu.PC							=	(ushort)(cpu.registers[0] + ParseAddress(ref opcode));
 		}
-		public void RND_Cxkk(ushort opcode) //  Set Vx = random byte AND kk.
+		public void RND_Cxkk(ushort opcode) //  Set rx = random byte AND kk.
 		{
 			
 			(byte, byte) parsedData			=	ParseData(ref opcode);		// compute once and store in a (byte, byte)
-			byte Vx							=	parsedData.Item1;			// Get register number
+			byte rx							=	parsedData.Item1;			// Get register number
 			byte data						=	parsedData.Item2;			// fetch data
 
-			cpu.registers[Vx]				=	(byte)(RandByte() & data);
+			cpu.registers[rx]				=	(byte)(RandByte() & data);
 		}
 
 		public unsafe void DRW_Dxyn(ushort opcode)
-		//	Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+		//	Display n-byte sprite starting at memory location I at (rx, ry), set VF = collision.
 		/*
 		 *	We iterate over the sprite, row by row and column by column. 
 		 *	We know there are eight columns because a sprite is guaranteed to be eight pixels wide.
@@ -266,13 +270,13 @@ namespace CHIP_8_dotNET.Chip8
 				const byte VIDEO_WIDTH = 64;
 				const byte VIDEO_HEIGHT = 32;
 				(byte, byte, byte) parsedRegisters = ParseRegisters(ref opcode);
-				byte Vx = parsedRegisters.Item1;
-				byte Vy = parsedRegisters.Item2;
+				byte rx = parsedRegisters.Item1;
+				byte ry = parsedRegisters.Item2;
 				byte height = parsedRegisters.Item3;
 
 				// Wrap if going beyond screen boundaries
-				byte xPos = (byte)(cpu.registers[Vx] % VIDEO_WIDTH);
-				byte yPos = (byte)(cpu.registers[Vy] % VIDEO_HEIGHT);
+				byte xPos = (byte)(cpu.registers[rx] % VIDEO_WIDTH);
+				byte yPos = (byte)(cpu.registers[ry] % VIDEO_HEIGHT);
 
 				cpu.registers[cpu.Vf] = 0;
 				//uint *screenPixel;
@@ -320,17 +324,17 @@ namespace CHIP_8_dotNET.Chip8
 		{
 			
 			(byte, byte) parsedData			=	ParseData(ref opcode);		//	Compute once and store in a (byte, byte)
-			byte Vx							=	parsedData.Item1;			//	Get register number
+			byte rx							=	parsedData.Item1;			//	Get register number
 			byte op							=	parsedData.Item2;			//	Fetch data
-			byte key						=	cpu.registers[Vx];          //	Fetch Value from selected register
+			byte key						=	cpu.registers[rx];          //	Fetch Value from selected register
 			byte input						=	ReadInput();
 			switch (op)
 			{
-				case 0x9E:		//Skip next instruction if key with the value of Vx is pressed.
+				case 0x9E:		//Skip next instruction if key with the value of rx is pressed.
 					if (input	==	key) cpu.PC	+=	2;
 					break;
-				case 0xA1:		//	Skip next instruction if key with the value of Vx is not pressed.
-					if (input	==	key) cpu.PC	+=	2;
+				case 0xA1:		//	Skip next instruction if key with the value of rx is not pressed.
+					if (input	!=	key) cpu.PC	+=	2;
 					break;
 				default:
 					throw new System.ArgumentException("Invalid Exxx opcode");
@@ -340,55 +344,49 @@ namespace CHIP_8_dotNET.Chip8
 		{
 			
 			(byte, byte)	parsedData		=	ParseData(ref opcode);		// compute once and store in a (byte, byte)
-			byte			Vx				=	parsedData.Item1;			// Get register number
+			byte			rx				=	parsedData.Item1;			// Get register number
 			byte			op				=	parsedData.Item2;           // fetch data
 			switch(op)
 			{
-				case	0x07:   //	Set Vx = delay timer value.
-					cpu.registers[Vx]	=	cpu.delayTimer;
+				case	0x07:   //	Set rx = delay timer value.
+					cpu.registers[rx]	=	cpu.delayTimer;
 					break;
-				case	0x0A:   //	Wait for a key press, store the value of the key in Vx.
+				case	0x0A:   //	Wait for a key press, store the value of the key in rx.
 					byte	key			=	ReadInput();
 					break;
 				case	0x15:
-					cpu.delayTimer		=	cpu.registers[Vx];
+					cpu.delayTimer		=	cpu.registers[rx];
 					break;
-				case	0x18:   //	Set sound timer = Vx.
-					cpu.soundTimer		=	cpu.registers[Vx];
+				case	0x18:   //	Set sound timer = rx.
+					cpu.soundTimer		=	cpu.registers[rx];
 					break;
-				case	0x1E:   //	Set I = I + Vx.
-					cpu.IReg			+=	cpu.registers[Vx];
+				case	0x1E:   //	Set I = I + rx.
+					cpu.IReg			+=	cpu.registers[rx];
 					break;
-				case	0x29:   //	Set I = location of sprite for digit Vx.
-					byte digit = cpu.registers[Vx];
-					cpu.IReg = memory.fontSet[(byte)5 * digit];
+				case	0x29:   //	Set I = location of sprite for digit rx.
+					cpu.IReg = (ushort)(5 * cpu.registers[rx]);
 					break;
 
-				case	0x33:   //	Store BCD representation of Vx in memory locations I, I+1, and I+2.
-					byte value = cpu.registers[Vx];
-					// Ones-place
-					memory.liveMem[cpu.IReg + 2] = (byte)(value % 10);
-					value /= 10;
-
-					// Tens-place
-					memory.liveMem[cpu.IReg + 1] = (byte)(value % 10);
-					value /= 10;
-
-					// Hundreds-place
-					memory.liveMem[cpu.IReg] = (byte)(value % 10);
+				case	0x33:   //	Store BCD representation of rx in memory locations I, I+1, and I+2.
+					//byte value = cpu.registers[rx];
+					memory.liveMem[cpu.IReg] = (byte)(cpu.registers[rx] / 100);
+					memory.liveMem[cpu.IReg + 1] = (byte)((cpu.registers[rx] % 100) / 10);
+					memory.liveMem[cpu.IReg + 2] = (byte)(cpu.registers[rx] % 10);
 					break;
-				case	0x55:   //	Store registers V0 through Vx in memory starting at location I.
-					for (byte i = 0; i <= Vx; ++i)
+				case	0x55:   //	Store registers V0 through rx in memory starting at location I.
+					for (byte i = 0; i <= rx; ++i)
 					{
 						memory.liveMem[cpu.IReg + i] = cpu.registers[i];
 					}
 					break;
-				case	0x65:   //	Read registers V0 through Vx from memory starting at location I.
-					for (byte i = 0; i <= Vx; ++i)
+				case	0x65:   //	Read registers V0 through rx from memory starting at location I.
+					for (byte i = 0; i <= rx; ++i)
 					{
 						cpu.registers[i] = memory.liveMem[cpu.IReg + i];
 					}
 					break;
+				default:
+					throw new System.ArgumentException("Invalid Fxxx opcode");
 
 			}
 		}

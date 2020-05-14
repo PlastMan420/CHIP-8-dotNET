@@ -20,14 +20,14 @@ namespace CHIP_8_dotNET.Chip8
 		const   int fontSetSize                 = 80;
 		const	int keypadSize					= 16;
 		const   int interpreterSize             = 0x200 - fontSetSize;	//	0x1FF - 0x80 = 0x01B0 - 0x50 = 0x160
-		const   int programSize                 = 0xCA0 + 0x060;	//	Starts at location 0x200 -> 0xEA0 + stack starting at 0xEA0 
+		const   int programSize                 = 0xCA0;    //	Starts at location 0x200 -> 0xEA0 + stack starting at 0xEA0 
 		//const   int stackSize                   = 0x060;		//	96 bytes of stack
+		const	int stackSize					= 16;
 		const	int videoSize					= 64*32;     //	256 bytes 64x32 bits 0xF00 -> 0xFFF
 
 		public  byte[] liveMem                  = new byte[systemSize];
-		//public  byte[] interpreterMemory        = new byte[interpreterSize];
-		public  byte[] programMemory            = new byte[programSize];
-		//public  byte[] stack					= new byte[stackSize];
+		public  Stack<ushort> stack				= new Stack<ushort>();
+		public	byte[] programMemory			= new byte[programSize];
 		public  uint[] videoMemory				= new uint[videoSize]; // It's uint32 so that we can use SDL2
 		public  byte[] fontSet =
 		{	0xF0, 0x90, 0x90, 0x90, 0xF0, 
@@ -56,26 +56,18 @@ namespace CHIP_8_dotNET.Chip8
 		};
 		public Memory() 
 		{
-			//interpreterMemory[interpreterSize - 1] = 1;
-			//programMemory[programSize - 1] = 1; // dummy data to combat .Concat() laziness
-			//stack[stackSize - 1] = 1;
 		}
 		public void InitMemory()
 		{
 			//liveMem = fontSet.Concat(interpreterMemory).Concat(programMemory).Concat(stack).ToArray();
 			fontSet.CopyTo(liveMem, 0);
 			programMemory.CopyTo(liveMem, 0x200);
-			for(int i = 0; i < liveMem.Length; i++)
-				Console.WriteLine("{0:x3}: {1:x}", i, liveMem[i]);
+			//for(int i = 0; i < liveMem.Length; i++)
+				//Console.WriteLine("{0:x3}: {1:x}", i, liveMem[i]);
 			//Console.WriteLine(liveMem.Length);
 
 
 
-		}
-		public void InitBlock(ref byte[] memblock)
-		{
-			for (int i = 0; i < memblock.Length; i++)
-				memblock[i] = 0;
 		}
 
 	}
