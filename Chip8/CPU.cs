@@ -3,23 +3,30 @@
  * Execusion.cs and InstructionSet.cs define the CPU's execusion.
  */
 
+using System.Runtime.ConstrainedExecution;
+
 namespace CHIP_8_dotNET.Chip8
 {
      class CPU
     {
         // Registers
         public  byte[]          registers = new byte[16];    // x16 8-bit general purpose registers
-        public  int             Vf = 15;
+        public  readonly int    Vf = 15;                     // flag register index
         public  ushort          IReg;                        // index register
         public  ushort          PC;                          // program counter
         public  byte            delayTimer;
         public  byte            soundTimer;
-
         
-        
-
         public CPU() 
         {
+        }
+
+        public void InitCPU()
+        {
+            this.PC = 0x200;
+            this.IReg = 0;
+            this.delayTimer = 0;
+            this.soundTimer = 0;
         }
     }
 }

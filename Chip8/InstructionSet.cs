@@ -97,21 +97,16 @@ namespace CHIP_8_dotNET.Chip8
 					cpu.PC = memory.stack.Pop();
 					break;
 				default:
-					return;
+					throw new System.ArgumentException("Invalid 00xx opcode");
 			}
 		}
 
 		public void JMP_1nnn(ushort opcode) //	jump to nnn
 		{
-			
-			//ushort address						=	ParseAddress(ref opcode);
 			cpu.PC								=	ParseAddress(ref opcode);
 		}
-		public void CALL_2nnn(ushort opcode) //	Store PC in stack thrn jump to nnn
+		public void CALL_2nnn(ushort opcode) //	Store PC in stack then jump to nnn
 		{
-			//ushort address						=	ParseAddress(ref opcode);
-			//memory.stack[cpu.SP]				=	(byte)cpu.PC;
-			//++cpu.SP;	
 			memory.stack.Push(cpu.PC);
 			cpu.PC								= ParseAddress(ref opcode);
 		}
@@ -139,7 +134,7 @@ namespace CHIP_8_dotNET.Chip8
 			(byte, byte, byte) parsedRegisters	= ParseRegisters(ref opcode);
 			byte rx								= parsedRegisters.Item1;
 			byte ry								= parsedRegisters.Item2;
-			byte op								= parsedRegisters.Item3;
+			
 			if (cpu.registers[rx] == cpu.registers[ry])
 				cpu.PC += 2;
 		}
@@ -147,7 +142,7 @@ namespace CHIP_8_dotNET.Chip8
 		public void LD_6xkk(ushort opcode)  // Set rx = kk.
 		{
 			
-			(byte, byte)	parsedData			= ParseData(ref opcode);    // compute once and store  in a (byte, byte)
+			(byte, byte)	parsedData			= ParseData(ref opcode);    // compute once and store in a (byte, byte)
 			byte			rx					= parsedData.Item1;         // Get register number
 			byte			data				= parsedData.Item2;         // fetch data
 			cpu.registers[rx]					= data;
@@ -158,15 +153,9 @@ namespace CHIP_8_dotNET.Chip8
 			(byte, byte)	parsedData			= ParseData(ref opcode);    // compute once and store  in a (byte, byte)
 			byte			rx					= parsedData.Item1;         // Get register number
 			byte			data				= parsedData.Item2;         // fetch data
-			cpu.registers[rx] += data;
+			cpu.registers[rx]					+= data;
 		}
 
-
-
-		/// <summary>
-		/// Opcode set 8xxx. they include logical and arithmetic operations
-		/// </summary>
-		/// <param name="opcode"></param>
 		public void Set_8000(ushort opcode)
 		{
 			
@@ -193,31 +182,31 @@ namespace CHIP_8_dotNET.Chip8
 					break;
 
 				case	0x4:      // summing 2 registers.
-					int sum = (cpu.registers[rx] + cpu.registers[ry]);
+					byte sum = (byte)(cpu.registers[rx] + cpu.registers[ry]);
 					if (sum > 255u) cpu.registers[cpu.Vf] = 1; else cpu.registers[cpu.Vf] = 0;
 					cpu.registers[rx] = (byte)(sum & 0xFFu);
 					break;
 
 				case	0x5:     // subtracting ry from rx.
-					if (cpu.registers[rx] > cpu.registers[ry]) cpu.registers[15] = 1; else cpu.registers[cpu.Vf] = 0;
-					cpu.registers[rx]	-= cpu.registers[ry];
+					cpu.registers[15] = (byte)(cpu.registers[rx] > cpu.registers[ry] ? 1 : 0);
+					cpu.registers[rx] = (byte)((cpu.registers[rx] - cpu.registers[ry])); 
 					break;
 
 				case 0x6:
-					cpu.registers[cpu.Vf]	= (byte)(cpu.registers[15] & 0x1u);
+					cpu.registers[cpu.Vf]	= (byte)(cpu.registers[15] & 0x1);
 					cpu.registers[rx]		= (byte)(cpu.registers[rx] >> 1);
 					break;
 
 				case 0x7:      // SUBN rx, ry         // Set rx = ry - rx, set VF = NOT borrow.
-					if (cpu.registers[ry] > cpu.registers[rx]) cpu.registers[15] = 1; else cpu.registers[cpu.Vf] = 0;
-					cpu.registers[rx] = (byte)(cpu.registers[ry] - cpu.registers[rx]);
+					cpu.registers[15] = (byte)(cpu.registers[ry] > cpu.registers[rx] ? 1 : 0);
+					cpu.registers[rx] = (byte)((cpu.registers[ry] - cpu.registers[rx]));
 					break;
 
 				case 0xE:   
 					//	If the most-significant bit of rx is 1, then VF is set to 1, otherwise to 0. Then rx is multiplied by 2.
 					//	A left shift is performed(multiplication by 2), and the most significant bit is saved in Register VF.
-					cpu.registers[cpu.Vf] = (byte)(((cpu.registers[rx] & 0x80) == 0x80) ? 1 : 0);
-					cpu.registers[rx] = (byte)(cpu.registers[rx] << 1);
+					cpu.registers[cpu.Vf]	= (byte)(((cpu.registers[rx] & 0x80) == 0x80) ? 1 : 0);
+					cpu.registers[rx]		= (byte)(cpu.registers[rx] << 1);
 					break;
 				default:
 					throw new System.ArgumentException("Invalid 8xxx opcode");
@@ -352,7 +341,7 @@ namespace CHIP_8_dotNET.Chip8
 					cpu.registers[rx]	=	cpu.delayTimer;
 					break;
 				case	0x0A:   //	Wait for a key press, store the value of the key in rx.
-					byte	key			=	ReadInput();
+					byte	inputKEy			=	ReadInput();
 					break;
 				case	0x15:
 					cpu.delayTimer		=	cpu.registers[rx];

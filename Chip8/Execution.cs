@@ -18,11 +18,8 @@ namespace CHIP_8_dotNET.Chip8
 		{
 			memory.programMemory = File.ReadAllBytes(path); //  load program into programMemory[]
 			memory.InitMemory();
-
-			cpu.PC          = 0x200;
-			cpu.IReg		= 0;
-			cpu.delayTimer  = 0;
-			cpu.soundTimer  = 0;
+			cpu.InitCPU();
+			
 			Program();    //  start the program
 		}
 		
