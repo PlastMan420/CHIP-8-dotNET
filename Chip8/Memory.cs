@@ -7,10 +7,7 @@
   *  0                           1FF  200
   */
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace CHIP_8_dotNET.Chip8
 {
@@ -45,7 +42,8 @@ namespace CHIP_8_dotNET.Chip8
 			0xF0, 0x80, 0x80, 0x80, 0xF0, 
 			0xE0, 0x90, 0x90, 0x90, 0xE0, 
 			0xF0, 0x80, 0xF0, 0x80, 0xF0, 
-			0xF0, 0x80, 0xF0, 0x80, 0x80 };
+			0xF0, 0x80, 0xF0, 0x80, 0x80 
+		};
 		public int[] keypad =
 		{
 			0x1, 0x2, 0x3, 
@@ -59,21 +57,12 @@ namespace CHIP_8_dotNET.Chip8
 		}
 		public void InitMemory()
 		{
-			//liveMem = fontSet.Concat(interpreterMemory).Concat(programMemory).Concat(stack).ToArray();
 			fontSet.CopyTo(liveMem, 0);
 			programMemory.CopyTo(liveMem, 0x200);
 			//for(int i = 0; i < liveMem.Length; i++)
 				//Console.WriteLine("{0:x3}: {1:x}", i, liveMem[i]);
 			//Console.WriteLine(liveMem.Length);
-
-
-
 		}
 
 	}
 }
-/*
- *  int[] front = { 1, 2, 3, 4 };
-	int[] back = { 5, 6, 7, 8 };
-	int[] combined = front.Concat(back).ToArray();
- */

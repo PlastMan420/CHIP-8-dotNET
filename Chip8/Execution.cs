@@ -11,8 +11,8 @@ namespace CHIP_8_dotNET.Chip8
 {
 	class Execution
 	{
-		private Memory memory = new Memory();
-		private CPU cpu = new CPU();
+		private Memory memory	= new Memory();
+		private CPU cpu			= new CPU();
 		ushort  opcode;
 		public Execution(string path) 
 		{
@@ -27,10 +27,6 @@ namespace CHIP_8_dotNET.Chip8
 		{
 			InstructionSet instructionSet = new InstructionSet(ref memory, ref cpu);
 
-			// IntPtr window = SDL.SDL_CreateWindow("Chip-8 Interpreter", 128, 128, 64 * 8, 32 * 8, 0);
-			// var renderer    = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
-			// var texture     = SDL.SDL_CreateTexture(
-			//    renderer, SDL.SDL_PIXELFORMAT_RGBA8888, Convert.ToInt32(SDL.SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING) , 64, 32);
 			if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) < 0)
 			{
 				Console.WriteLine("SDL failed to init.");
@@ -104,14 +100,14 @@ namespace CHIP_8_dotNET.Chip8
 		}
 		public void Next()  //  Fetches upcoming instruction for decoding.
 		{
-			Console.WriteLine("cpu.pc: {0:x}", cpu.PC);
+			//Console.WriteLine("cpu.pc: {0:x}", cpu.PC);
 			try
 			{
 				opcode = memory.liveMem[cpu.PC];
 				opcode *= 0x100;
 				opcode += memory.liveMem[cpu.PC + 1];
 				cpu.PC += 2;
-				Console.WriteLine("opcode: {0:x}", opcode);
+				Console.WriteLine("{0:x3}: {1:x4}", cpu.PC-2, opcode);
 				if (cpu.delayTimer > 0) --cpu.delayTimer;
 				if (cpu.soundTimer > 0) --cpu.soundTimer;
 			}

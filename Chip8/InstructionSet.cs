@@ -57,7 +57,7 @@ namespace CHIP_8_dotNET.Chip8
 		{
 			byte	rx	=	(byte)((opcode & 0x0F00) >> 8);
 			byte	ry	=	(byte)((opcode & 0x00F0) >> 4);
-			byte	op	=	(byte)(opcode & 0x00F0);
+			byte	op	=	(byte)(opcode & 0x000F);
 			return (rx, ry, op);
 		}
 		public ushort ParseAddress(ref ushort opcode)
@@ -92,8 +92,6 @@ namespace CHIP_8_dotNET.Chip8
 					Array.Clear(memory.videoMemory, 0, 64*32);
 					break;
 				case 0x00EE: // stack POP
-					//	cpu.PC = memory.stack[cpu.SP];
-					//--cpu.SP;
 					cpu.PC = memory.stack.Pop();
 					break;
 				default:
@@ -306,7 +304,7 @@ namespace CHIP_8_dotNET.Chip8
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.Message + ", ");
+				Console.WriteLine(e.Message + ", DRAW instruction error");
 			}
 		}
 		public void SKIP_Exxx(ushort opcode)
@@ -358,9 +356,9 @@ namespace CHIP_8_dotNET.Chip8
 
 				case	0x33:   //	Store BCD representation of rx in memory locations I, I+1, and I+2.
 					//byte value = cpu.registers[rx];
-					memory.liveMem[cpu.IReg] = (byte)(cpu.registers[rx] / 100);
-					memory.liveMem[cpu.IReg + 1] = (byte)((cpu.registers[rx] % 100) / 10);
-					memory.liveMem[cpu.IReg + 2] = (byte)(cpu.registers[rx] % 10);
+					memory.liveMem[cpu.IReg]		= (byte)(cpu.registers[rx] / 100);
+					memory.liveMem[cpu.IReg + 1]	= (byte)((cpu.registers[rx] % 100) / 10);
+					memory.liveMem[cpu.IReg + 2]	= (byte)(cpu.registers[rx] % 10);
 					break;
 				case	0x55:   //	Store registers V0 through rx in memory starting at location I.
 					for (byte i = 0; i <= rx; ++i)

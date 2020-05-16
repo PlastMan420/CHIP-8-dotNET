@@ -2,9 +2,6 @@
  * This defines the CPU as a structure.
  * Execusion.cs and InstructionSet.cs define the CPU's execusion.
  */
-
-using System.Runtime.ConstrainedExecution;
-
 namespace CHIP_8_dotNET.Chip8
 {
      class CPU
