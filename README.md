@@ -3,5 +3,8 @@ a CHIP8 emulator in C#
 
 # Build Requirements
 * A C# 7.0 compiler
-# Dependencies
+# Build Dependencies
 * SDL2-CS
+# Runtime Dependencies
+* SDL2-CS.dll
+* SDL2.dll (download from SDL website)
