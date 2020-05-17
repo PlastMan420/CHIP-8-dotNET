@@ -15,7 +15,7 @@ namespace CHIP_8_dotNET.Chip8
 		private readonly Memory memory = new Memory();
 
 		//	Method lookup table 
-		public Action<ushort> InstructionListDelegate;
+		//public Action<ushort> InstructionListDelegate;
 		public Dictionary<int, Action<ushort>> InstructionList = new Dictionary<int, Action<ushort>>();
 
 		public InstructionSet(ref Memory _memory, ref CPU _cpu)
@@ -73,9 +73,10 @@ namespace CHIP_8_dotNET.Chip8
 		} 
 		public byte ReadInput()
 		{
-			int	input	=	Convert.ToInt32(Console.ReadKey());
-			if (memory.keypad.Contains(input))
-				return Convert.ToByte(input);
+			string input	= Console.ReadKey().KeyChar.ToString();    //	string representation of input char
+			int key			= Convert.ToInt32(input);
+			if (memory.keypad.Contains(key))
+				return Convert.ToByte(key);
 
 			return	ReadInput(); // 'wait' for a valid key input
 		}
