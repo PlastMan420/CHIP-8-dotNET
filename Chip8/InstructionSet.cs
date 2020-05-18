@@ -15,7 +15,6 @@ namespace CHIP_8_dotNET.Chip8
 		private readonly Memory memory = new Memory();
 
 		//	Method lookup table 
-		//public Action<ushort> InstructionListDelegate;
 		public Dictionary<int, Action<ushort>> InstructionList = new Dictionary<int, Action<ushort>>();
 
 		public InstructionSet(ref Memory _memory, ref CPU _cpu)

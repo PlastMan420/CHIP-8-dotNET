@@ -7,6 +7,7 @@ namespace CHIP_8_dotNET
 	{
 		static void Main(string[] args)
 		{
+			//	Emulator Instance.
 			//  Program's location would be in args[], now we load it into main memory
 			Execution emulator = new Execution(args[0]);
 		}

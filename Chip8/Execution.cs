@@ -62,11 +62,11 @@ namespace CHIP_8_dotNET.Chip8
 				try
 				{
 					Next();
+
 					/*
 						Dictionary<int, Action<ushort>>
 						int = Parse(). Action<ushort> is a delegate to void methods with 1 ushort parameter.
 					*/
-					
 					instructionSet.InstructionList[Parse()](opcode);
 
 					while (SDL.SDL_PollEvent(out sdlEvent) != 0)
@@ -104,7 +104,7 @@ namespace CHIP_8_dotNET.Chip8
 			try
 			{
 				opcode = memory.liveMem[cpu.PC];
-				opcode *= 0x100;
+				opcode = (ushort)(opcode << 8);
 				opcode += memory.liveMem[cpu.PC + 1];
 				cpu.PC += 2;
 				Console.WriteLine("{0:x3}: {1:x4}", cpu.PC-2, opcode);
