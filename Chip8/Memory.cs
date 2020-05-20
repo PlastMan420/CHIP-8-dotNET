@@ -44,13 +44,24 @@ namespace CHIP_8_dotNET.Chip8
 			0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
 			0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 		};
-		public int[] keypad =
+		public Dictionary<char, byte> keypad = new Dictionary<char, byte>()
 		{
-			0x1, 0x2, 0x3, 
-			0x4, 0x5, 0x6, 
-			0x7, 0x8, 0x9, 
-			0xA, 0xB, 0xC, 
-			0xD, 0xE, 0xF
+			{'0', 0 },
+			{'1', 1 },
+			{'2', 2 },
+			{'3', 3 },
+			{'4', 4 },
+			{'5', 5 },
+			{'6', 6 },
+			{'7', 7 },
+			{'8', 8 },
+			{'9', 9 },
+			{'a', 0x0A },
+			{'b', 0x0B },
+			{'c', 0x0C },
+			{'d', 0x0D },
+			{'e', 0x0E },
+			{'f', 0x0F }
 		};
 		public Memory() 
 		{

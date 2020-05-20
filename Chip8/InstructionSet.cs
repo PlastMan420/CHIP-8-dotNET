@@ -72,10 +72,9 @@ namespace CHIP_8_dotNET.Chip8
 		} 
 		public byte ReadInput()
 		{
-			string input	= Console.ReadKey().KeyChar.ToString();    //	string representation of input char
-			int key			= Convert.ToInt32(input);
-			if (memory.keypad.Contains(key))
-				return Convert.ToByte(key);
+			char input = Console.ReadKey().KeyChar;   //	string representation of input char
+
+			if (memory.keypad.ContainsKey(input)) return memory.keypad[input];
 
 			return	ReadInput(); // 'wait' for a valid key input
 		}
