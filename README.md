@@ -8,3 +8,5 @@ a CHIP8 emulator in C#
 # Runtime Dependencies
 * SDL2-CS.dll
 * SDL2.dll (download from SDL website)
+
+![SpaceInvaders](https://imgur.com/a/ju8oQFZ)
