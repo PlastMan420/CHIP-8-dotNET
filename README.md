@@ -4,9 +4,8 @@ a CHIP8 emulator in C#
 # Build Requirements
 * A C# 7.0 compiler
 # Build Dependencies
-* SDL2-CS
+* [SDL2-CS](https://github.com/flibitijibibo/SDL2-CS). C# bindings for SDL2 library
 # Runtime Dependencies
-* SDL2-CS.dll
-* SDL2.dll (download from SDL website)
-
+* [SDL2-CS](https://github.com/flibitijibibo/SDL2-CS) 
+* [SDL2](https://www.libsdl.org/download-2.0.php) 
 ![SpaceInvaders](https://i.imgur.com/WA2bghw.png)
