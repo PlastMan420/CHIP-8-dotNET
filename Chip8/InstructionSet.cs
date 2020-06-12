@@ -94,7 +94,8 @@ namespace CHIP_8_dotNET.Chip8
 					cpu.PC = memory.stack.Pop();
 					break;
 				default:
-					throw new System.ArgumentException("Invalid 00xx opcode");
+					throw new System.ArgumentException("Invalid 00xx opcode: ");
+					
 			}
 		}
 
