@@ -48,24 +48,24 @@ namespace SDL2
 		 * running with. You will likely want to check this somewhere in your
 		 * program!
 		 */
-		public const int SDL_TTF_MAJOR_VERSION = 2;
-		public const int SDL_TTF_MINOR_VERSION = 0;
-		public const int SDL_TTF_PATCHLEVEL = 16;
+		public const int SDL_TTF_MAJOR_VERSION =	2;
+		public const int SDL_TTF_MINOR_VERSION =	0;
+		public const int SDL_TTF_PATCHLEVEL =		16;
 
-		public const int UNICODE_BOM_NATIVE = 0xFEFF;
-		public const int UNICODE_BOM_SWAPPED = 0xFFFE;
+		public const int UNICODE_BOM_NATIVE =	0xFEFF;
+		public const int UNICODE_BOM_SWAPPED =	0xFFFE;
 
-		public const int TTF_STYLE_NORMAL = 0x00;
-		public const int TTF_STYLE_BOLD = 0x01;
-		public const int TTF_STYLE_ITALIC = 0x02;
-		public const int TTF_STYLE_UNDERLINE = 0x04;
-		public const int TTF_STYLE_STRIKETHROUGH = 0x08;
+		public const int TTF_STYLE_NORMAL =		0x00;
+		public const int TTF_STYLE_BOLD =		0x01;
+		public const int TTF_STYLE_ITALIC =		0x02;
+		public const int TTF_STYLE_UNDERLINE =		0x04;
+		public const int TTF_STYLE_STRIKETHROUGH =	0x08;
 
-		public const int TTF_HINTING_NORMAL = 0;
-		public const int TTF_HINTING_LIGHT = 1;
-		public const int TTF_HINTING_MONO = 2;
-		public const int TTF_HINTING_NONE = 3;
-		public const int TTF_HINTING_LIGHT_SUBPIXEL = 4; /* >= 2.0.16 */
+		public const int TTF_HINTING_NORMAL =		0;
+		public const int TTF_HINTING_LIGHT =		1;
+		public const int TTF_HINTING_MONO =		2;
+		public const int TTF_HINTING_NONE =		3;
+		public const int TTF_HINTING_LIGHT_SUBPIXEL =	4; /* >= 2.0.16 */
 
 		public static void SDL_TTF_VERSION(out SDL.SDL_version X)
 		{
@@ -80,7 +80,7 @@ namespace SDL2
 		{
 			SDL.SDL_version result;
 			IntPtr result_ptr = INTERNAL_TTF_LinkedVersion();
-			result = (SDL.SDL_version)Marshal.PtrToStructure(
+			result = (SDL.SDL_version) Marshal.PtrToStructure(
 				result_ptr,
 				typeof(SDL.SDL_version)
 			);
@@ -101,12 +101,12 @@ namespace SDL2
 		);
 		public static unsafe IntPtr TTF_OpenFont(string file, int ptsize)
 		{
-			byte* utf8File = SDL.Utf8Encode(file);
+			byte* utf8File = SDL.Utf8EncodeHeap(file);
 			IntPtr handle = INTERNAL_TTF_OpenFont(
 				utf8File,
 				ptsize
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8File);
+			Marshal.FreeHGlobal((IntPtr) utf8File);
 			return handle;
 		}
 
@@ -130,15 +130,14 @@ namespace SDL2
 			string file,
 			int ptsize,
 			long index
-		)
-		{
-			byte* utf8File = SDL.Utf8Encode(file);
+		) {
+			byte* utf8File = SDL.Utf8EncodeHeap(file);
 			IntPtr handle = INTERNAL_TTF_OpenFontIndex(
 				utf8File,
 				ptsize,
 				index
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8File);
+			Marshal.FreeHGlobal((IntPtr) utf8File);
 			return handle;
 		}
 
@@ -209,9 +208,11 @@ namespace SDL2
 		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
 		public static extern void TTF_SetFontKerning(IntPtr font, int allowed);
 
-		/* font refers to a TTF_Font* */
+		/* font refers to a TTF_Font*.
+		 * IntPtr is actually a C long! This ignores Win64!
+		 */
 		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-		public static extern long TTF_FontFaces(IntPtr font);
+		public static extern IntPtr TTF_FontFaces(IntPtr font);
 
 		/* font refers to a TTF_Font* */
 		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
@@ -300,16 +301,15 @@ namespace SDL2
 			string text,
 			out int w,
 			out int h
-		)
-		{
-			byte* utf8Text = SDL.Utf8Encode(text);
+		) {
+			byte* utf8Text = SDL.Utf8EncodeHeap(text);
 			int result = INTERNAL_TTF_SizeUTF8(
 				font,
 				utf8Text,
 				out w,
 				out h
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8Text);
+			Marshal.FreeHGlobal((IntPtr) utf8Text);
 			return result;
 		}
 
@@ -353,9 +353,8 @@ namespace SDL2
 			int measure_width,
 			out int extent,
 			out int count
-		)
-		{
-			byte* utf8Text = SDL.Utf8Encode(text);
+		) {
+			byte* utf8Text = SDL.Utf8EncodeHeap(text);
 			int result = INTERNAL_TTF_MeasureUTF8(
 				font,
 				utf8Text,
@@ -363,7 +362,7 @@ namespace SDL2
 				out extent,
 				out count
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8Text);
+			Marshal.FreeHGlobal((IntPtr) utf8Text);
 			return result;
 		}
 
@@ -400,15 +399,14 @@ namespace SDL2
 			IntPtr font,
 			string text,
 			SDL.SDL_Color fg
-		)
-		{
-			byte* utf8Text = SDL.Utf8Encode(text);
+		) {
+			byte* utf8Text = SDL.Utf8EncodeHeap(text);
 			IntPtr result = INTERNAL_TTF_RenderUTF8_Solid(
 				font,
 				utf8Text,
 				fg
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8Text);
+			Marshal.FreeHGlobal((IntPtr) utf8Text);
 			return result;
 		}
 
@@ -448,16 +446,15 @@ namespace SDL2
 			string text,
 			SDL.SDL_Color fg,
 			uint wrapLength
-		)
-		{
-			byte* utf8Text = SDL.Utf8Encode(text);
+		) {
+			byte* utf8Text = SDL.Utf8EncodeHeap(text);
 			IntPtr result = INTERNAL_TTF_RenderUTF8_Solid_Wrapped(
 				font,
 				utf8Text,
 				fg,
 				wrapLength
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8Text);
+			Marshal.FreeHGlobal((IntPtr) utf8Text);
 			return result;
 		}
 
@@ -514,16 +511,15 @@ namespace SDL2
 			string text,
 			SDL.SDL_Color fg,
 			SDL.SDL_Color bg
-		)
-		{
-			byte* utf8Text = SDL.Utf8Encode(text);
+		) {
+			byte* utf8Text = SDL.Utf8EncodeHeap(text);
 			IntPtr result = INTERNAL_TTF_RenderUTF8_Shaded(
 				font,
 				utf8Text,
 				fg,
 				bg
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8Text);
+			Marshal.FreeHGlobal((IntPtr) utf8Text);
 			return result;
 		}
 
@@ -565,9 +561,8 @@ namespace SDL2
 			SDL.SDL_Color fg,
 			SDL.SDL_Color bg,
 			uint wrapLength
-		)
-		{
-			byte* utf8Text = SDL.Utf8Encode(text);
+		) {
+			byte* utf8Text = SDL.Utf8EncodeHeap(text);
 			IntPtr result = INTERNAL_TTF_RenderUTF8_Shaded_Wrapped(
 				font,
 				utf8Text,
@@ -575,7 +570,7 @@ namespace SDL2
 				bg,
 				wrapLength
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8Text);
+			Marshal.FreeHGlobal((IntPtr) utf8Text);
 			return result;
 		}
 
@@ -630,15 +625,14 @@ namespace SDL2
 			IntPtr font,
 			string text,
 			SDL.SDL_Color fg
-		)
-		{
-			byte* utf8Text = SDL.Utf8Encode(text);
+		) {
+			byte* utf8Text = SDL.Utf8EncodeHeap(text);
 			IntPtr result = INTERNAL_TTF_RenderUTF8_Blended(
 				font,
 				utf8Text,
 				fg
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8Text);
+			Marshal.FreeHGlobal((IntPtr) utf8Text);
 			return result;
 		}
 
@@ -674,16 +668,15 @@ namespace SDL2
 			string text,
 			SDL.SDL_Color fg,
 			uint wrapped
-		)
-		{
-			byte* utf8Text = SDL.Utf8Encode(text);
+		) {
+			byte* utf8Text = SDL.Utf8EncodeHeap(text);
 			IntPtr result = INTERNAL_TTF_RenderUTF8_Blended_Wrapped(
 				font,
 				utf8Text,
 				fg,
 				wrapped
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8Text);
+			Marshal.FreeHGlobal((IntPtr) utf8Text);
 			return result;
 		}
 

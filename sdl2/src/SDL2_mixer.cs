@@ -48,9 +48,9 @@ namespace SDL2
 		 * running with. You will likely want to check this somewhere in your
 		 * program!
 		 */
-		public const int SDL_MIXER_MAJOR_VERSION = 2;
-		public const int SDL_MIXER_MINOR_VERSION = 0;
-		public const int SDL_MIXER_PATCHLEVEL = 5;
+		public const int SDL_MIXER_MAJOR_VERSION =	2;
+		public const int SDL_MIXER_MINOR_VERSION =	0;
+		public const int SDL_MIXER_PATCHLEVEL =		5;
 
 		/* In C, you can redefine this value before including SDL_mixer.h.
 		 * We're not going to allow this in SDL2#, since the value of this
@@ -67,12 +67,12 @@ namespace SDL2
 		[Flags]
 		public enum MIX_InitFlags
 		{
-			MIX_INIT_FLAC = 0x00000001,
-			MIX_INIT_MOD = 0x00000002,
-			MIX_INIT_MP3 = 0x00000008,
-			MIX_INIT_OGG = 0x00000010,
-			MIX_INIT_MID = 0x00000020,
-			MIX_INIT_OPUS = 0x00000040
+			MIX_INIT_FLAC =		0x00000001,
+			MIX_INIT_MOD =		0x00000002,
+			MIX_INIT_MP3 =		0x00000008,
+			MIX_INIT_OGG =		0x00000010,
+			MIX_INIT_MID =		0x00000020,
+			MIX_INIT_OPUS =		0x00000040
 		}
 
 		public struct MIX_Chunk
@@ -151,7 +151,7 @@ namespace SDL2
 		{
 			SDL.SDL_version result;
 			IntPtr result_ptr = INTERNAL_MIX_Linked_Version();
-			result = (SDL.SDL_version)Marshal.PtrToStructure(
+			result = (SDL.SDL_version) Marshal.PtrToStructure(
 				result_ptr,
 				typeof(SDL.SDL_version)
 			);
@@ -189,7 +189,7 @@ namespace SDL2
 			IntPtr src,
 			int freesrc
 		);
-
+		
 		/* IntPtr refers to a Mix_Chunk* */
 		/* This is an RWops macro in the C header. */
 		public static IntPtr Mix_LoadWAV(string file)
@@ -205,11 +205,11 @@ namespace SDL2
 		);
 		public static unsafe IntPtr Mix_LoadMUS(string file)
 		{
-			byte* utf8File = SDL.Utf8Encode(file);
+			byte* utf8File = SDL.Utf8EncodeHeap(file);
 			IntPtr handle = INTERNAL_Mix_LoadMUS(
 				utf8File
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8File);
+			Marshal.FreeHGlobal((IntPtr) utf8File);
 			return handle;
 		}
 
@@ -413,8 +413,7 @@ namespace SDL2
 			int channel,
 			IntPtr chunk,
 			int loops
-		)
-		{
+		) {
 			return Mix_PlayChannelTimed(channel, chunk, loops, -1);
 		}
 
@@ -454,8 +453,7 @@ namespace SDL2
 			IntPtr chunk,
 			int loops,
 			int ms
-		)
-		{
+		) {
 			return Mix_FadeInChannelTimed(channel, chunk, loops, ms, -1);
 		}
 
@@ -581,11 +579,11 @@ namespace SDL2
 		);
 		public static unsafe int Mix_SetMusicCMD(string command)
 		{
-			byte* utf8Cmd = SDL.Utf8Encode(command);
+			byte* utf8Cmd = SDL.Utf8EncodeHeap(command);
 			int result = INTERNAL_Mix_SetMusicCMD(
 				utf8Cmd
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8Cmd);
+			Marshal.FreeHGlobal((IntPtr) utf8Cmd);
 			return result;
 		}
 
@@ -601,11 +599,11 @@ namespace SDL2
 		);
 		public static unsafe int Mix_SetSoundFonts(string paths)
 		{
-			byte* utf8Paths = SDL.Utf8Encode(paths);
+			byte* utf8Paths = SDL.Utf8EncodeHeap(paths);
 			int result = INTERNAL_Mix_SetSoundFonts(
 				utf8Paths
 			);
-			Marshal.FreeHGlobal((IntPtr)utf8Paths);
+			Marshal.FreeHGlobal((IntPtr) utf8Paths);
 			return result;
 		}
 
