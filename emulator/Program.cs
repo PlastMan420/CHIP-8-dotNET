@@ -1,5 +1,4 @@
-﻿using System;
-using CHIP_8_dotNET.Chip8;
+﻿using CHIP_8_dotNET.Chip8;
 
 namespace CHIP_8_dotNET
 {
