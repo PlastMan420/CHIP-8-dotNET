@@ -2,27 +2,28 @@
  * Parsing and Executing 
  */
 
+using SDL2;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using SDL2;
 
 namespace CHIP_8_dotNET.Chip8
 {
 	class Execution
 	{
-		private Memory memory	= new Memory();
-		private CPU cpu			= new CPU();
-		ushort  opcode;
-		public Execution(string path) 
+		private Memory memory = new Memory();
+		private CPU cpu = new CPU();
+		ushort opcode;
+		public Execution(string path)
 		{
 			memory.programMemory = File.ReadAllBytes(path); //  load program into programMemory[]
 			memory.InitMemory();
 			cpu.InitCPU();
-			
+
 			Program();    //  start the program
 		}
-		
+
 		public void Program()
 		{
 			InstructionSet instructionSet = new InstructionSet(ref memory, ref cpu);
@@ -51,7 +52,7 @@ namespace CHIP_8_dotNET.Chip8
 				Console.WriteLine("SDL could not create a valid renderer.");
 				return;
 			}
-			
+
 			Console.WriteLine("program starting");
 			IntPtr sdlSurface, sdlTexture = IntPtr.Zero;
 			SDL.SDL_Event sdlEvent;
@@ -104,10 +105,11 @@ namespace CHIP_8_dotNET.Chip8
 			try
 			{
 				opcode = memory.liveMem[cpu.PC];
+				cpu.PC++;
 				opcode = (ushort)(opcode << 8);
-				opcode += memory.liveMem[cpu.PC + 1];
-				cpu.PC += 2;
-				Console.WriteLine("{0:x3}: {1:x4}", cpu.PC-2, opcode);
+				opcode += memory.liveMem[cpu.PC];
+				cpu.PC++;
+				Debug.WriteLine("{0:x3}: {1:x4}", cpu.PC - 2, opcode);
 				if (cpu.delayTimer > 0) --cpu.delayTimer;
 				if (cpu.soundTimer > 0) --cpu.soundTimer;
 			}
